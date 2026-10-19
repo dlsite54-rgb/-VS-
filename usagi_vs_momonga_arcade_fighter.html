@@ -1,0 +1,3678 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>토끼(우사기) VS 하늘다람쥐(모몽가) : 표정 대격돌 격투게임</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=M+PLUS+Rounded+1c:wght@800;900&family=Rubik+Mono+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-display: 'Black Han Sans', 'M PLUS Rounded 1c', 'Rubik Mono One', sans-serif;
+      --font-body: 'Jua', 'M PLUS Rounded 1c', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at 50% 15%, #3b0764 0%, #0f172a 60%, #020617 100%);
+      font-family: var(--font-body);
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .arcade-title {
+      font-family: var(--font-display);
+      text-shadow: 0 3px 0 #000, 0 0 16px rgba(250, 204, 21, 0.7);
+      letter-spacing: 0.03em;
+    }
+
+    .arcade-stroke {
+      font-family: var(--font-display);
+      -webkit-text-stroke: 3px #111827;
+      paint-order: stroke fill;
+      text-shadow: 0 6px 0 #111827, 0 10px 24px rgba(0,0,0,0.65);
+    }
+
+    .arcade-stroke-sm {
+      font-family: var(--font-display);
+      -webkit-text-stroke: 2px #111827;
+      paint-order: stroke fill;
+      text-shadow: 0 3px 0 #111827;
+    }
+
+    /* Arcade Button Styling */
+    .btn-arcade {
+      position: relative;
+      transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.1s ease;
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.65), inset 0 2px 3px rgba(255, 255, 255, 0.45);
+      touch-action: manipulation;
+    }
+
+    .btn-arcade:active, .btn-arcade.pressed {
+      transform: translateY(4px) scale(0.96);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.65), inset 0 2px 3px rgba(255, 255, 255, 0.3);
+      filter: brightness(1.15);
+    }
+
+    /* Special Button Pulse when Ready */
+    @keyframes ultimatePulse {
+      0%, 100% {
+        box-shadow: 0 5px 0 #7c2d12, 0 0 15px #facc15, 0 0 28px #f97316, inset 0 2px 4px #fff;
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 5px 0 #7c2d12, 0 0 28px #fef08a, 0 0 48px #ef4444, inset 0 2px 6px #fff;
+        transform: scale(1.04);
+      }
+    }
+
+    .ult-ready {
+      animation: ultimatePulse 0.8s infinite ease-in-out;
+    }
+
+    /* HP Bar Skew & Shine */
+    .hp-frame {
+      transform: skewX(-10deg);
+      box-shadow: 0 4px 0 rgba(0,0,0,0.6), inset 0 2px 4px rgba(0,0,0,0.75);
+    }
+
+    /* Ready Fight Overlay Animation */
+    @keyframes slamText {
+      0% { transform: scale(3.2) rotate(-8deg); opacity: 0; }
+      60% { transform: scale(0.92) rotate(2deg); opacity: 1; }
+      80% { transform: scale(1.06) rotate(-1deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .animate-slam {
+      animation: slamText 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Face Cam Portrait Frame */
+    .face-cam-box {
+      box-shadow: 0 5px 0 rgba(0,0,0,0.7), inset 0 0 12px rgba(0,0,0,0.35);
+      transition: transform 0.12s ease, border-color 0.15s ease;
+    }
+
+    .face-cam-pop {
+      transform: scale(1.12) rotate(-3deg);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Custom Scrollbar for Expression Modal */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-1.5 sm:p-3">
+
+  <!-- TOP CONTROL & LANGUAGE BAR -->
+  <header class="w-full max-w-6xl flex flex-wrap items-center justify-between gap-2 mb-1.5 px-3 py-2 bg-slate-900/95 border-2 border-slate-700 rounded-2xl shadow-lg backdrop-blur-md z-30">
+    <!-- Title & Badge -->
+    <div class="flex items-center gap-2">
+      <span class="px-2 py-0.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs tracking-wider shadow">FACE FIGHTER</span>
+      <h1 id="ui-game-title" class="arcade-title text-base sm:text-xl text-amber-300">토끼 VS 하늘다람쥐 대격돌!</h1>
+    </div>
+
+    <!-- Language, Expression Gallery, AI Mode, Sound & Instant Gauge Controls -->
+    <div class="flex flex-wrap items-center gap-1.5">
+      <!-- Language Selector -->
+      <div class="flex bg-slate-800 p-0.5 rounded-xl border border-slate-600">
+        <button onclick="setLanguage('ko')" id="lang-ko" class="px-2 py-1 rounded-lg text-xs font-bold transition bg-amber-400 text-slate-950">🇰🇷 한국어</button>
+        <button onclick="setLanguage('en')" id="lang-en" class="px-2 py-1 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">🇺🇸 ENG</button>
+        <button onclick="setLanguage('ja')" id="lang-ja" class="px-2 py-1 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white">🇯🇵 日本語</button>
+      </div>
+
+      <!-- Expression Gallery Modal Button -->
+      <button onclick="openExpressionModal()" id="btn-expr-gallery" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 via-fuchsia-500 to-indigo-500 hover:from-pink-400 hover:to-indigo-400 text-white font-bold text-xs sm:text-sm border border-pink-300 shadow-[0_0_12px_rgba(236,72,153,0.5)] active:scale-95 transition cursor-pointer">
+        🎭 표정 도감 / 미리보기
+      </button>
+
+      <!-- AI Difficulty / Mode -->
+      <select id="ai-mode-select" onchange="changeAIMode(this.value)" class="bg-slate-800 text-amber-200 border border-slate-600 rounded-xl px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-amber-400 cursor-pointer">
+        <option value="normal" id="opt-normal">⚡ 보통 AI</option>
+        <option value="easy" id="opt-easy">🌱 쉬움 AI</option>
+        <option value="hard" id="opt-hard">🔥 매운맛 AI</option>
+        <option value="sandbag" id="opt-sandbag">🥊 샌드백 (표정 감상)</option>
+      </select>
+
+      <!-- Charge 100% Ultimate Button -->
+      <button onclick="fillPlayerUlt()" id="btn-charge-ult" class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs border border-yellow-200 shadow active:scale-95 transition cursor-pointer">
+        ⚡ 필살기 충전
+      </button>
+
+      <!-- Sound Toggle -->
+      <button onclick="toggleMute()" id="btn-sound" class="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-emerald-300 transition cursor-pointer">
+        🔊 효과음 ON
+      </button>
+
+      <!-- Restart Button -->
+      <button onclick="startNewMatch()" id="btn-restart-top" class="px-2 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 border border-indigo-400 text-xs font-bold text-white transition active:scale-95 cursor-pointer">
+        🔄 재시작
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN GAME STAGE CONTAINER -->
+  <main class="relative w-full max-w-6xl aspect-[16/10] sm:aspect-[16/9] max-h-[68vh] bg-slate-950 rounded-3xl border-4 border-slate-700 shadow-[0_0_50px_rgba(0,0,0,0.85)] overflow-hidden">
+
+    <!-- FIGHTING HUD OVERLAY WITH LIVE FACE CAMS -->
+    <div class="absolute top-0 left-0 right-0 p-2 sm:p-3.5 z-20 pointer-events-none flex flex-col gap-1">
+      <div class="flex items-start justify-between gap-1.5 sm:gap-3">
+
+        <!-- PLAYER 1 (USAGI) FACE CAM + HUD -->
+        <div class="flex-1 flex items-start gap-2 sm:gap-3">
+          <!-- Live Close-up Face Cam P1 -->
+          <div class="flex flex-col items-center shrink-0">
+            <div id="p1-face-box" class="face-cam-box relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-b from-amber-100 to-amber-200 border-3 border-amber-400 overflow-hidden">
+              <canvas id="p1-face-canvas" width="140" height="140"></canvas>
+              <span class="absolute top-0.5 left-1 px-1 rounded bg-amber-500 text-slate-950 font-black text-[9px] leading-tight">CAM</span>
+            </div>
+            <span id="p1-expr-badge" class="mt-1 px-2 py-0.5 rounded-full bg-slate-900/95 border border-amber-400 text-amber-300 font-bold text-[10px] sm:text-xs whitespace-nowrap shadow">
+              😊 기본 (Idle)
+            </span>
+          </div>
+
+          <!-- P1 Bars -->
+          <div class="flex-1 flex flex-col gap-1 pt-0.5">
+            <div class="flex items-center justify-between px-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 font-black text-[10px] sm:text-xs shadow">P1</span>
+                <span id="hud-p1-name" class="arcade-stroke-sm text-sm sm:text-xl text-amber-300 tracking-wide">토끼 (우사기)</span>
+              </div>
+              <span id="hud-p1-hp-text" class="text-xs sm:text-sm font-bold text-amber-200">100%</span>
+            </div>
+
+            <!-- P1 Health Bar -->
+            <div class="hp-frame relative w-full h-4 sm:h-6 bg-slate-900/95 border-2 border-white rounded-lg overflow-hidden">
+              <div id="p1-hp-trail" class="absolute top-0 left-0 bottom-0 bg-rose-400 transition-all duration-300" style="width: 100%;"></div>
+              <div id="p1-hp-bar" class="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-emerald-500 via-lime-400 to-yellow-300 transition-all duration-75" style="width: 100%;"></div>
+              <div class="absolute top-0 left-0 right-0 h-1/3 bg-white/30"></div>
+            </div>
+
+            <!-- P1 Special / Ultimate Gauge -->
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span id="hud-p1-mp-label" class="text-[10px] sm:text-xs font-extrabold text-amber-300 uppercase tracking-wider">필살기</span>
+              <div class="hp-frame relative flex-1 h-2.5 sm:h-3.5 bg-slate-900 border border-amber-400/80 rounded overflow-hidden">
+                <div id="p1-mp-bar" class="h-full bg-gradient-to-r from-amber-500 via-orange-400 to-yellow-200 transition-all duration-100" style="width: 0%;"></div>
+              </div>
+              <span id="hud-p1-mp-status" class="text-[10px] sm:text-xs font-black text-amber-300">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMER & ROUND INDICATOR -->
+        <div class="flex flex-col items-center justify-center px-1 shrink-0">
+          <div class="w-12 h-11 sm:w-16 sm:h-14 rounded-2xl bg-slate-900/95 border-2 sm:border-3 border-amber-400 shadow-[0_4px_0_#000] flex flex-col items-center justify-center">
+            <span id="hud-timer-label" class="text-[8px] sm:text-[10px] text-amber-300 font-bold tracking-widest -mb-1">TIME</span>
+            <span id="hud-timer" class="arcade-stroke-sm text-xl sm:text-3xl text-white leading-none">60</span>
+          </div>
+          <span id="hud-score-badge" class="mt-1 px-2 py-0.5 rounded-full bg-slate-900/90 border border-slate-600 text-[10px] sm:text-xs text-slate-200 font-bold">
+            🏆 0 - 0
+          </span>
+        </div>
+
+        <!-- PLAYER 2 / AI (MOMONGA) HUD + FACE CAM -->
+        <div class="flex-1 flex items-start gap-2 sm:gap-3">
+          <!-- P2 Bars -->
+          <div class="flex-1 flex flex-col gap-1 pt-0.5">
+            <div class="flex items-center justify-between px-1">
+              <span id="hud-p2-hp-text" class="text-xs sm:text-sm font-bold text-sky-200">100%</span>
+              <div class="flex items-center gap-1.5">
+                <span id="hud-p2-name" class="arcade-stroke-sm text-sm sm:text-xl text-sky-300 tracking-wide">하늘다람쥐 (모몽가)</span>
+                <span class="px-1.5 py-0.5 rounded bg-sky-400 text-slate-950 font-black text-[10px] sm:text-xs shadow">CPU</span>
+              </div>
+            </div>
+
+            <!-- P2 Health Bar (drains right-to-left) -->
+            <div class="hp-frame relative w-full h-4 sm:h-6 bg-slate-900/95 border-2 border-white rounded-lg overflow-hidden">
+              <div id="p2-hp-trail" class="absolute top-0 right-0 bottom-0 bg-yellow-300 transition-all duration-300" style="width: 100%;"></div>
+              <div id="p2-hp-bar" class="absolute top-0 right-0 bottom-0 bg-gradient-to-l from-sky-500 via-cyan-400 to-teal-300 transition-all duration-75" style="width: 100%;"></div>
+              <div class="absolute top-0 left-0 right-0 h-1/3 bg-white/30"></div>
+            </div>
+
+            <!-- P2 Rage / Tantrum Gauge -->
+            <div class="flex items-center justify-end gap-1.5 mt-0.5">
+              <span id="hud-p2-mp-status" class="text-[10px] sm:text-xs font-black text-sky-300">0%</span>
+              <div class="hp-frame relative flex-1 h-2.5 sm:h-3.5 bg-slate-900 border border-sky-400/80 rounded overflow-hidden">
+                <div id="p2-mp-bar" class="ml-auto h-full bg-gradient-to-l from-purple-500 via-pink-500 to-sky-300 transition-all duration-100" style="width: 0%;"></div>
+              </div>
+              <span id="hud-p2-mp-label" class="text-[10px] sm:text-xs font-extrabold text-sky-300 uppercase tracking-wider">생떼 게이지</span>
+            </div>
+          </div>
+
+          <!-- Live Close-up Face Cam P2 (Momonga) -->
+          <div class="flex flex-col items-center shrink-0">
+            <div id="p2-face-box" class="face-cam-box relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-b from-sky-100 to-indigo-100 border-3 border-sky-400 overflow-hidden">
+              <canvas id="p2-face-canvas" width="140" height="140"></canvas>
+              <span class="absolute top-0.5 right-1 px-1 rounded bg-sky-500 text-slate-950 font-black text-[9px] leading-tight">CAM</span>
+            </div>
+            <span id="p2-expr-badge" class="mt-1 px-2 py-0.5 rounded-full bg-slate-900/95 border border-sky-400 text-sky-300 font-bold text-[10px] sm:text-xs whitespace-nowrap shadow">
+              😏 기본 (Idle)
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CENTER ANNOUNCEMENT OVERLAY (READY... FIGHT! / K.O.!) -->
+    <div id="announcement-layer" class="absolute inset-0 z-20 pointer-events-none flex flex-col items-center justify-center">
+      <div id="announcement-main" class="arcade-stroke text-5xl sm:text-8xl text-amber-300 text-center hidden">
+        READY...
+      </div>
+      <div id="announcement-sub" class="arcade-stroke-sm text-xl sm:text-3xl text-white mt-2 text-center hidden">
+        준비하시라!
+      </div>
+    </div>
+
+    <!-- WIN / LOSE RESULT MODAL OVERLAY -->
+    <div id="result-modal" class="absolute inset-0 z-30 bg-slate-950/85 backdrop-blur-sm hidden flex-col items-center justify-center p-4">
+      <div class="max-w-lg w-full bg-slate-900/95 border-4 border-amber-400 rounded-3xl p-5 sm:p-6 text-center shadow-[0_0_50px_rgba(250,204,21,0.4)] flex flex-col items-center gap-3 animate-slam">
+        <div id="result-badge" class="px-4 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs sm:text-sm tracking-widest uppercase">
+          MATCH FINISH
+        </div>
+        <h2 id="result-title" class="arcade-stroke text-4xl sm:text-6xl text-amber-300">
+          YOU WIN!
+        </h2>
+        <p id="result-desc" class="text-sm sm:text-base text-slate-200 font-bold">
+          우사기가 모몽가를 시원하게 참교육했습니다! 우라야하!!
+        </p>
+
+        <!-- Result Expression Portrait Comparison -->
+        <div class="flex items-center justify-center gap-6 my-1">
+          <div class="flex flex-col items-center">
+            <div class="w-24 h-24 rounded-2xl bg-amber-100 border-3 border-amber-400 overflow-hidden shadow-lg">
+              <canvas id="result-p1-canvas" width="140" height="140"></canvas>
+            </div>
+            <span id="result-p1-label" class="text-xs font-bold text-amber-300 mt-1">토끼 (우사기)</span>
+          </div>
+          <span class="arcade-stroke-sm text-2xl text-slate-400">VS</span>
+          <div class="flex flex-col items-center">
+            <div class="w-24 h-24 rounded-2xl bg-sky-100 border-3 border-sky-400 overflow-hidden shadow-lg">
+              <canvas id="result-p2-canvas" width="140" height="140"></canvas>
+            </div>
+            <span id="result-p2-label" class="text-xs font-bold text-sky-300 mt-1">하늘다람쥐 (모몽가)</span>
+          </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="w-full grid grid-cols-2 gap-2 bg-slate-800/90 p-2.5 rounded-2xl border border-slate-700 text-xs sm:text-sm">
+          <div class="flex flex-col">
+            <span id="stat-max-combo-label" class="text-slate-400">최대 콤보</span>
+            <span id="stat-max-combo" class="text-amber-300 font-black text-base sm:text-lg">12 HIT</span>
+          </div>
+          <div class="flex flex-col">
+            <span id="stat-rem-hp-label" class="text-slate-400">남은 체력</span>
+            <span id="stat-rem-hp" class="text-emerald-300 font-black text-base sm:text-lg">84%</span>
+          </div>
+        </div>
+
+        <button onclick="startNewMatch()" id="btn-rematch" class="btn-arcade w-full py-3 mt-1 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-400 to-rose-500 text-slate-950 font-black text-base sm:text-xl tracking-wide border-2 border-white cursor-pointer">
+          🔥 다시 싸우기 (REMATCH)
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN GAME CANVAS -->
+    <canvas id="game-canvas"></canvas>
+  </main>
+
+  <!-- EXPRESSION ENCYCLOPEDIA / PREVIEW MODAL ([🎭 표정 도감 / 미리보기]) -->
+  <div id="expression-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden items-center justify-center p-2 sm:p-4">
+    <div class="bg-slate-900 border-4 border-pink-400 rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-[0_0_60px_rgba(236,72,153,0.4)]">
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-4 py-3 bg-slate-800 border-b border-slate-700">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🎭</span>
+          <div>
+            <h3 id="modal-expr-title" class="arcade-title text-lg sm:text-2xl text-pink-300">토끼 & 하늘다람쥐 16종 표정 도감 / 미리보기</h3>
+            <p id="modal-expr-subtitle" class="text-xs text-slate-300">카드를 클릭하면 큰 화면과 목소리 효과음으로 표정을 테스트하고 게임에 바로 적용해 볼 수 있습니다!</p>
+          </div>
+        </div>
+        <button onclick="closeExpressionModal()" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-sm border border-rose-300 cursor-pointer">
+          ✕ 닫기
+        </button>
+      </div>
+
+      <!-- Modal Content Body -->
+      <div class="p-3 sm:p-5 overflow-y-auto flex flex-col gap-5">
+
+        <!-- Live Interactive Stage Preview Bar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/90 border-2 border-slate-700 rounded-2xl p-3 sm:p-4">
+          <div class="flex items-center gap-4">
+            <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-b from-amber-100 via-white to-sky-100 border-4 border-amber-300 overflow-hidden shrink-0 shadow-lg">
+              <canvas id="preview-spotlight-canvas" width="180" height="180"></canvas>
+            </div>
+            <div class="flex flex-col gap-1">
+              <span id="spotlight-char-tag" class="inline-block w-fit px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-xs">토끼 (우사기)</span>
+              <h4 id="spotlight-expr-name" class="text-xl sm:text-2xl font-black text-white">1. 기본 (Idle)</h4>
+              <p id="spotlight-expr-desc" class="text-xs sm:text-sm text-slate-300">원본 이미지 그대로의 초롱초롱한 검은 눈 + 아치형 눈썹 + ω 모양 입 + 씰룩이는 꼬리 선</p>
+              <div class="flex flex-wrap gap-2 mt-1">
+                <button onclick="triggerSpotlightTestInGame()" id="btn-apply-ingame" class="px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs cursor-pointer transition">
+                  ▶ 전투 화면에서 이 표정 3초간 고정 테스트
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- USAGI 8 EXPRESSIONS GRID -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2.5 py-0.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs">CHARACTER 1</span>
+            <h4 id="gallery-usagi-heading" class="text-base sm:text-lg font-black text-amber-300">🐰 토끼 (우사기) 표정 8종</h4>
+          </div>
+          <div id="usagi-expr-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- MOMONGA 8 EXPRESSIONS GRID -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-2.5 py-0.5 rounded-lg bg-sky-400 text-slate-950 font-black text-xs">CHARACTER 2</span>
+            <h4 id="gallery-momonga-heading" class="text-base sm:text-lg font-black text-sky-300">🐿️ 하늘다람쥐 (모몽가) 표정 8종</h4>
+          </div>
+          <div id="momonga-expr-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ON-SCREEN ARCADE CONTROLLER & KEYBOARD GUIDE -->
+  <footer class="w-full max-w-6xl mt-1.5 flex flex-col gap-1.5 z-30">
+    <!-- Touch / Click Arcade Pad -->
+    <div class="w-full flex flex-wrap items-center justify-between gap-2 bg-slate-900/95 border-2 border-slate-700 rounded-3xl px-3 py-2 sm:px-5 sm:py-2.5 shadow-xl">
+
+      <!-- Left D-Pad (Movement & Jump & Guard) -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <button id="pad-left" class="btn-arcade w-11 h-11 sm:w-14 sm:h-13 rounded-2xl bg-slate-700 hover:bg-slate-600 border-2 border-slate-400 text-white font-black text-lg flex flex-col items-center justify-center cursor-pointer">
+          <span>◀</span>
+          <span class="text-[9px] text-slate-300 font-normal">A / ←</span>
+        </button>
+        <button id="pad-right" class="btn-arcade w-11 h-11 sm:w-14 sm:h-13 rounded-2xl bg-slate-700 hover:bg-slate-600 border-2 border-slate-400 text-white font-black text-lg flex flex-col items-center justify-center cursor-pointer">
+          <span>▶</span>
+          <span class="text-[9px] text-slate-300 font-normal">D / →</span>
+        </button>
+        <button id="pad-jump" class="btn-arcade w-12 h-11 sm:w-15 sm:h-13 rounded-2xl bg-indigo-600 hover:bg-indigo-500 border-2 border-indigo-300 text-white font-black text-sm sm:text-base flex flex-col items-center justify-center cursor-pointer">
+          <span id="lbl-jump">점프</span>
+          <span class="text-[9px] text-indigo-200 font-normal">W / ↑</span>
+        </button>
+        <button id="pad-guard" class="btn-arcade w-12 h-11 sm:w-15 sm:h-13 rounded-2xl bg-teal-600 hover:bg-teal-500 border-2 border-teal-300 text-white font-black text-sm sm:text-base flex flex-col items-center justify-center cursor-pointer">
+          <span id="lbl-guard">가드</span>
+          <span class="text-[9px] text-teal-200 font-normal">S / ↓</span>
+        </button>
+      </div>
+
+      <!-- Right Action Buttons (Light Punch, Heavy Smash, Ultimate Special, Momonga Taunt Trigger) -->
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
+        <!-- Light Attack -->
+        <button id="pad-light" class="btn-arcade px-3 h-11 sm:px-4 sm:h-13 rounded-2xl bg-gradient-to-b from-amber-400 to-amber-500 border-2 border-yellow-200 text-slate-950 font-black flex flex-col items-center justify-center cursor-pointer">
+          <span id="lbl-light" class="text-xs sm:text-sm">👊 약공격 (야하!)</span>
+          <span class="text-[9px] text-slate-900 font-bold">Z / J</span>
+        </button>
+
+        <!-- Heavy Attack -->
+        <button id="pad-heavy" class="btn-arcade px-3 h-11 sm:px-4 sm:h-13 rounded-2xl bg-gradient-to-b from-rose-500 to-red-600 border-2 border-rose-200 text-white font-black flex flex-col items-center justify-center cursor-pointer">
+          <span id="lbl-heavy" class="text-xs sm:text-sm">💥 강공격 (우라아!)</span>
+          <span class="text-[9px] text-rose-100 font-bold">X / K</span>
+        </button>
+
+        <!-- Special / Ultimate Move -->
+        <button id="pad-ult" class="btn-arcade px-3 h-11 sm:px-4 sm:h-13 rounded-2xl bg-gradient-to-b from-purple-600 via-fuchsia-600 to-orange-500 border-2 border-amber-200 text-white font-black flex flex-col items-center justify-center opacity-75 cursor-pointer">
+          <span id="lbl-ult" class="text-xs sm:text-sm">🌟 우라야하 필살기</span>
+          <span class="text-[9px] text-amber-200 font-bold">C / L / SPACE</span>
+        </button>
+
+        <!-- Momonga Cute Taunt / Action Trigger -->
+        <button id="pad-taunt" onclick="forceMomongaTaunt()" class="btn-arcade px-2.5 h-11 sm:px-3.5 sm:h-13 rounded-2xl bg-gradient-to-b from-sky-400 to-blue-500 border-2 border-sky-200 text-slate-950 font-black flex flex-col items-center justify-center cursor-pointer">
+          <span id="lbl-taunt" class="text-xs sm:text-sm">💖 귀여운척 도발</span>
+          <span class="text-[9px] text-slate-900 font-bold">V / 다람쥐표정</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Bottom Helper Tip -->
+    <div id="ui-controls-tip" class="text-center text-[11px] sm:text-xs text-slate-400 px-2">
+      💡 키보드 조작: <b class="text-slate-200">방향키(←↑↓→) / WASD</b> 이동·점프·가드 | <b class="text-amber-300">Z(J)</b> 약공격(야하!) | <b class="text-rose-400">X(K)</b> 강공격(극화체 우라아!) | <b class="text-fuchsia-300">C(Space)</b> 초필살기 | <b class="text-sky-300">V</b> 하늘다람쥐 도발 보기
+    </div>
+  </footer>
+
+  <script>
+    /********************************************************************
+     * 1. MULTI-LANGUAGE DICTIONARY & 16 FACIAL EXPRESSIONS DATA
+     ********************************************************************/
+    const EXPRESSION_CATALOG = {
+      usagi: [
+        {
+          id: 'IDLE',
+          icon: '😊',
+          ko: { name: '기본 (Idle)', desc: '원본 이미지 그대로의 초롱초롱한 검은 눈 + 아치형 눈썹 + ω 입 + 씰룩이는 꼬리' },
+          en: { name: 'Idle (Default)', desc: 'Original shiny black eyes, arched eyebrows, ω mouth & wiggling tail lines' },
+          ja: { name: '基本 (Idle)', desc: '元画像そのままのキラキラした黒い瞳＋アーチ眉＋ω口＋揺れる尻尾' }
+        },
+        {
+          id: 'LIGHT',
+          icon: '😆',
+          ko: { name: '약공격 (야하!)', desc: '기합 넣는 눈썹 + 초롱초롱한 눈 + 크게 벌린 입("야하!")' },
+          en: { name: 'Light Attack (Yaha!)', desc: 'Energetic angled brows + wide open shouting mouth ("YAHA!")' },
+          ja: { name: '弱攻撃 (ヤハ！)', desc: '気合の入った眉＋大きく開けた口（「ヤハ！」）' }
+        },
+        {
+          id: 'HEAVY',
+          icon: '😠',
+          ko: { name: '강공격 (우라아!!)', desc: '진지하고 강렬한 극화체 눈썹 + 작은 동공 + 이빨을 드러낸 코믹 터프 표정' },
+          en: { name: 'Heavy Attack (Uraa!!)', desc: 'Intense comic-book thick brows, tiny pupils & clenched fierce teeth' },
+          ja: { name: '強攻撃 (ウラァ！！)', desc: '劇画調の太い眉＋小さな瞳孔＋歯を食いしばるタフな表情' }
+        },
+        {
+          id: 'SUPER',
+          icon: '🤩',
+          ko: { name: '필살기 (우라야하!!)', desc: '눈에서 황금빛 별/안광이 번쩍이며 포효하는 초각성 표정' },
+          en: { name: 'Super Move (Urayaha!!)', desc: 'Golden star-glowing eyes with an explosive roaring mouth' },
+          ja: { name: '必殺技 (ウラヤハ！！)', desc: '瞳から黄金の星と眼光が輝く超覚醒咆哮フェイス' }
+        },
+        {
+          id: 'GUARD',
+          icon: '😬',
+          ko: { name: '가드 (Guard)', desc: '입을 꾹 다물고(ㅡ) 볼에 긴장한 땀방울이 맺힌 방어 표정' },
+          en: { name: 'Guard (Block)', desc: 'Tightly closed mouth (ㅡ) with a nervous sweat drop on the cheek' },
+          ja: { name: 'ガード (防御)', desc: '口を真一文字(ー)に結び、頬に汗を浮かべる防御表情' }
+        },
+        {
+          id: 'HURT',
+          icon: '😣',
+          ko: { name: '피격 (Hurt)', desc: '눈을 > < 모양으로 질끈 감고 입이 Д 모양으로 놀란 아픈 표정' },
+          en: { name: 'Hurt (Hit)', desc: 'Tightly squeezed > < eyes and shocked Д shaped mouth' },
+          ja: { name: '被弾 (ダメージ)', desc: '目を＞＜に強く閉じ、口がДの形に驚くダメージ表情' }
+        },
+        {
+          id: 'WIN',
+          icon: '✌️',
+          ko: { name: '승리 (WIN)', desc: '행복한 눈웃음(^ ω ^)을 지으며 뿌듯하고 당당하게 만세 하는 표정' },
+          en: { name: 'Victory (WIN)', desc: 'Happy curved eyes (^ ω ^) raising arms in proud celebration' },
+          ja: { name: '勝利 (WIN)', desc: '満面の笑み(^ ω ^)で誇らしげにバンザイする勝利ポーズ' }
+        },
+        {
+          id: 'LOSE',
+          icon: '🌀',
+          ko: { name: '패배 (LOSE)', desc: '눈이 @ @ 뱅글뱅글 돌며 입에서 영혼이 빠져나가는 패배 표정' },
+          en: { name: 'Defeat (LOSE)', desc: 'Swirling @ @ dizzy eyes with a cute ghost soul floating out' },
+          ja: { name: '敗北 (LOSE)', desc: '目が＠＠と回り、口から魂が抜けていく敗北表情' }
+        }
+      ],
+      momonga: [
+        {
+          id: 'IDLE',
+          icon: '😏',
+          ko: { name: '기본 (Idle)', desc: '원본 이미지 그대로의 아래쪽 반달 흰자위가 보이는 큰 눈 + 하늘색 코 + 4줄 볼터치' },
+          en: { name: 'Idle (Default)', desc: 'Original bottom-crescent sclera eyes, sky-blue nose & 4-line pink blush' },
+          ja: { name: '基本 (Idle)', desc: '元画像そのままの下三白眼の大きな瞳＋水色の鼻＋4本線の頬染め' }
+        },
+        {
+          id: 'TAUNT',
+          icon: '💖',
+          ko: { name: '귀여운 척 도발 (Taunt)', desc: '양손을 볼에 대고 눈을 초롱초롱 빛내며 하트를 날리는 표정("봐봐~ 귀여운 척!")' },
+          en: { name: 'Cute Taunt', desc: 'Both paws on cheeks, ultra-sparkling eyes & floating pink hearts ("Adore me!")' },
+          ja: { name: 'ぶりっ子挑発 (Taunt)', desc: '両手を頬に当て、瞳をウルウル輝かせてハートを飛ばすぶりっ子表情' }
+        },
+        {
+          id: 'ATTACK',
+          icon: '💢',
+          ko: { name: '공격/성질부리기 (내놔!!)', desc: '눈썹이 사납게 찌푸려지고 날카로운 송곳니를 드러내며 악쓰는 표정' },
+          en: { name: 'Tantrum Attack (Give it!)', desc: 'Fiercely furrowed brows & sharp fangs bared while yelling' },
+          ja: { name: '攻撃・癇癪 (よこせ！！)', desc: '眉を吊り上げ、鋭い牙をむき出しにして喚き散らす表情' }
+        },
+        {
+          id: 'HURT_LIGHT',
+          icon: '😳',
+          ko: { name: '피격-약 (억울/놀람)', desc: '눈알이 동그랗게 튀어나올 듯 놀라며(O O) 볼이 찌그러진 억울한 표정' },
+          en: { name: 'Light Hit (Shocked)', desc: 'Popping wide O O eyes with a squished cheek in disbelief' },
+          ja: { name: '被弾-弱 (びっくり)', desc: '目が真ん丸(O O)に飛び出し、頬がむぎゅっと潰れた悔しそうな表情' }
+        },
+        {
+          id: 'HURT_HEAVY',
+          icon: '😭',
+          ko: { name: '피격-강 (폭포수 눈물)', desc: '폭포수 같은 눈물(T Д T)을 양옆으로 뿜어내며 호빵처럼 납작해진 개그 표정' },
+          en: { name: 'Heavy Hit (Waterfall Tears)', desc: 'Gushing waterfall tears (T Д T) with a flattened comic face' },
+          ja: { name: '被弾-強 (滝のような涙)', desc: '滝のような涙(T Д T)を噴き出し、おまんじゅうのように潰れるギャグ顔' }
+        },
+        {
+          id: 'DIZZY',
+          icon: '😰',
+          ko: { name: '빈사/그로기 (체력 30%↓)', desc: '체력이 30% 이하일 때 식은땀을 줄줄 흘리며 동공이 지진 나는 표정' },
+          en: { name: 'Dizzy / Low HP (<30%)', desc: 'Shaking pupils, pale face & cold sweat when HP drops below 30%' },
+          ja: { name: '瀕死・グロッキー (HP30%↓)', desc: 'HP30%以下で冷や汗を流し、瞳孔がガタガタ震える瀕死表情' }
+        },
+        {
+          id: 'WIN',
+          icon: '✨',
+          ko: { name: '승리 (얄미운 미소)', desc: '거만하게 눈을 반쯤 감고 "훗" 비웃으며 반짝이를 뿌리는 얄미운 승리 표정' },
+          en: { name: 'Victory (Smug Smirk)', desc: 'Half-lidded smug eyes, cheeky smirk & sparkles all around' },
+          ja: { name: '勝利 (ドヤ顔)', desc: '生意気に目を細めて「フッ」と笑い、キラキラを振りまく勝利表情' }
+        },
+        {
+          id: 'LOSE',
+          icon: '😫',
+          ko: { name: '패배 (생떼 & 털 곤두섬)', desc: '분해서 눈물 콧물 흘리며 생떼를 쓰고 하늘색 꼬리 털이 삐죽삐죽 곤두선 표정' },
+          en: { name: 'Defeat (Crying Tantrum)', desc: 'Bawling tears & snot in frustration while the blue tail spikes up' },
+          ja: { name: '敗北 (大泣き＆尻尾逆立ち)', desc: '悔しさで涙と鼻水を垂らして駄々をこね、水色の尻尾がツンツン逆立つ表情' }
+        }
+      ]
+    };
+
+    const I18N = {
+      ko: {
+        gameTitle: "토끼(우사기) VS 하늘다람쥐(모몽가) 표정 대격돌!",
+        p1Name: "토끼 (우사기)",
+        p2Name: "하늘다람쥐 (모몽가)",
+        mpLabelP1: "우라야하 게이지",
+        mpLabelP2: "생떼 게이지",
+        mpReady: "MAX 발동가능!",
+        exprBtn: "🎭 표정 도감 / 미리보기",
+        optNormal: "⚡ 보통 AI",
+        optEasy: "🌱 쉬움 AI",
+        optHard: "🔥 매운맛 AI",
+        optSandbag: "🥊 샌드백 (표정 감상)",
+        chargeUlt: "⚡ 필살기 충전",
+        restart: "🔄 재시작",
+        sfxOn: "🔊 효과음 ON",
+        sfxOff: "🔇 효과음 OFF",
+        jump: "점프",
+        guard: "가드",
+        lightAtk: "👊 약공격 (야하!)",
+        heavyAtk: "💥 강공격 (우라아!)",
+        ultAtk: "🌟 우라야하 필살기",
+        tauntBtn: "💖 귀여운척 도발",
+        controlsTip: "💡 조작: <b class='text-slate-200'>방향키/WASD</b> 이동·점프·가드 | <b class='text-amber-300'>Z(J)</b> 약공격(야하!) | <b class='text-rose-400'>X(K)</b> 강공격(극화체 우라아!) | <b class='text-fuchsia-300'>C(Space)</b> 초필살기 | <b class='text-sky-300'>V</b> 다람쥐 귀여운척 도발",
+        readyMain: "READY...",
+        readySub: "표정 부자 토끼와 하늘다람쥐의 대결!",
+        fightMain: "FIGHT!",
+        fightSub: "우라야하ㅡ!! 신나게 때려보자!",
+        koMain: "K.O.!!",
+        koSub: "완벽한 결정타!! 표정 변화를 확인하세요!",
+        timeOverMain: "TIME OVER",
+        winTitle: "YOU WIN!!",
+        winDesc: "토끼(우사기)가 의기양양한 눈웃음(^ ω ^)으로 승리했습니다! 하늘다람쥐는 분해서 생떼를 씁니다!",
+        loseTitle: "YOU LOSE...",
+        loseDesc: "하늘다람쥐(모몽가)가 '훗' 비웃으며 승리했습니다... 토끼의 눈이 뱅글뱅글(@ @) 돕니다!",
+        drawTitle: "DRAW GAME",
+        drawDesc: "무승부입니다! 다시 한 판 붙어보세요!",
+        statMaxCombo: "최대 콤보",
+        statRemHp: "남은 체력",
+        rematchBtn: "🔥 다시 싸우기 (REMATCH)",
+        ultCutInTitle: "초필살기 : 우라야하 무한 난무!!",
+        ultCutInSub: "황금 안광 발동!! 이얏하아아ㅡ!!",
+        p2UltCutInTitle: "하늘다람쥐 생떼 발작 대폭발!!",
+        modalTitle: "토끼 & 하늘다람쥐 16종 표정 도감 / 미리보기",
+        modalSub: "카드를 클릭하면 큰 화면과 효과음으로 표정을 확인하고 게임에 바로 적용해 볼 수 있습니다!",
+        applyInGame: "▶ 전투 화면에서 이 표정 3.5초간 고정 테스트",
+        usagiCries: ["야하!!", "우라!!", "하아?!", "우라야하!!", "푸루루~!", "이얏하!"],
+        momongaCries: ["내놔!!", "칭찬해!!", "크르르..!", "다 내꺼야!", "안 돼!!"],
+        momongaTauntCries: ["봐봐~ 귀여운 척! 💖", "귀엽지?! 칭찬해!", "초롱초롱~✨"],
+        momongaHurtCries: ["악!!", "아야!!", "으아앙😭", "너무해!!", "살려줘!", "꾸에엑!"],
+        hitWords: ["퍽!!", "빠각!", "콰앙!!", "찰싹!", "우라앗!", "퍼억!!"]
+      },
+      en: {
+        gameTitle: "USAGI VS MOMONGA : FACE OFF BRAWL!",
+        p1Name: "USAGI (RABBIT)",
+        p2Name: "MOMONGA (SQUIRREL)",
+        mpLabelP1: "ULTIMATE GAUGE",
+        mpLabelP2: "TANTRUM GAUGE",
+        mpReady: "MAX READY!",
+        exprBtn: "🎭 Expression Gallery",
+        optNormal: "⚡ Normal AI",
+        optEasy: "🌱 Easy AI",
+        optHard: "🔥 Hardcore AI",
+        optSandbag: "🥊 Sandbag (Face Test)",
+        chargeUlt: "⚡ Fill Ultimate",
+        restart: "🔄 Restart",
+        sfxOn: "🔊 SFX ON",
+        sfxOff: "🔇 SFX OFF",
+        jump: "JUMP",
+        guard: "GUARD",
+        lightAtk: "👊 Light (Yaha!)",
+        heavyAtk: "💥 Heavy (Uraa!)",
+        ultAtk: "🌟 URAYAHA SUPER",
+        tauntBtn: "💖 Cute Taunt",
+        controlsTip: "💡 Controls: <b class='text-slate-200'>Arrows/WASD</b> Move/Jump/Guard | <b class='text-amber-300'>Z(J)</b> Light | <b class='text-rose-400'>X(K)</b> Heavy | <b class='text-fuchsia-300'>C(Space)</b> Ultimate | <b class='text-sky-300'>V</b> Momonga Cute Taunt",
+        readyMain: "READY...",
+        readySub: "Watch their hilarious facial expressions!",
+        fightMain: "FIGHT!",
+        fightSub: "URAYAHA!! Let's Brawl!",
+        koMain: "K.O.!!",
+        koSub: "DEVASTATING FINISH!!",
+        timeOverMain: "TIME OVER",
+        winTitle: "YOU WIN!!",
+        winDesc: "Usagi beams with a proud (^ ω ^) victory smile while Momonga throws a crying tantrum!",
+        loseTitle: "YOU LOSE...",
+        loseDesc: "Momonga smirks smugly while Usagi's eyes spin (@ @) with a floating soul!",
+        drawTitle: "DRAW GAME",
+        drawDesc: "Equal health! Try another round!",
+        statMaxCombo: "MAX COMBO",
+        statRemHp: "REMAINING HP",
+        rematchBtn: "🔥 REMATCH NOW",
+        ultCutInTitle: "SUPER: URAYAHA GOLDEN RUSH!!",
+        ultCutInSub: "STARLIGHT EYES ACTIVATED!! YAHAAA!!",
+        p2UltCutInTitle: "MOMONGA TANTRUM STORM!!",
+        modalTitle: "Usagi & Momonga 16 Expressions Encyclopedia",
+        modalSub: "Click any expression card to preview its animation, sound, and test it live in battle!",
+        applyInGame: "▶ Test this expression in-game for 3.5s",
+        usagiCries: ["YAHA!!", "URA!!", "HAA?!", "URAYAHA!!", "PURURU~!", "YAHAA!"],
+        momongaCries: ["GIVE IT!!", "PRAISE ME!!", "GRRR..!", "IT'S MINE!", "NOOO!!"],
+        momongaTauntCries: ["Look~ So cute! 💖", "Adore me!! ✨", "Sparkle Eyes~💖"],
+        momongaHurtCries: ["OUCH!!", "ACK!!", "WAAAH😭", "MEANIE!!", "STOP IT!", "GYAAH!"],
+        hitWords: ["POW!!", "SMACK!", "BAM!!", "WHACK!", "CRUSH!", "BOOM!!"]
+      },
+      ja: {
+        gameTitle: "うさぎ VS モモンガ 表情大激突！",
+        p1Name: "うさぎ (USAGI)",
+        p2Name: "モモンガ (MOMONGA)",
+        mpLabelP1: "ウラヤハゲージ",
+        mpLabelP2: "わがままゲージ",
+        mpReady: "MAX 発動可能！",
+        exprBtn: "🎭 表情図鑑 / プレビュー",
+        optNormal: "⚡ ふつう AI",
+        optEasy: "🌱 やさしい AI",
+        optHard: "🔥 激辛 AI",
+        optSandbag: "🥊 サンドバッグ (表情鑑賞)",
+        chargeUlt: "⚡ 必殺技チャージ",
+        restart: "🔄 リスタート",
+        sfxOn: "🔊 効果音 ON",
+        sfxOff: "🔇 効果音 OFF",
+        jump: "ジャンプ",
+        guard: "ガード",
+        lightAtk: "👊 弱攻撃 (ヤハ！)",
+        heavyAtk: "💥 強攻撃 (ウラァ！)",
+        ultAtk: "🌟 ウラヤハ超必殺技",
+        tauntBtn: "💖 ぶりっ子挑発",
+        controlsTip: "💡 操作: <b class='text-slate-200'>矢印/WASD</b> 移動・ジャンプ・ガード | <b class='text-amber-300'>Z(J)</b> 弱攻撃 | <b class='text-rose-400'>X(K)</b> 強攻撃(劇画顔) | <b class='text-fuchsia-300'>C(Space)</b> 超必殺技 | <b class='text-sky-300'>V</b> モモンガ挑発",
+        readyMain: "READY...",
+        readySub: "豊かな表情変化に注目してバトルしよう！",
+        fightMain: "FIGHT!",
+        fightSub: "ウラヤハーーッ！！バトル開始！",
+        koMain: "K.O.!!",
+        koSub: "完全決着！！表情をチェック！",
+        timeOverMain: "TIME OVER",
+        winTitle: "YOU WIN!!",
+        winDesc: "うさぎが誇らしげな笑顔(^ ω ^)で勝利！モモンガは悔しくて大泣きしています！",
+        loseTitle: "YOU LOSE...",
+        loseDesc: "モモンガが「フッ」とドヤ顔で勝利… うさぎは目が＠＠と回っています！",
+        drawTitle: "DRAW GAME",
+        drawDesc: "引き分けです！もう一戦しよう！",
+        statMaxCombo: "最大コンボ",
+        statRemHp: "残りHP",
+        rematchBtn: "🔥 もう一度戦う (REMATCH)",
+        ultCutInTitle: "超必殺技：ウラヤハ無限乱舞！！",
+        ultCutInSub: "黄金の眼光！！イヤッハァァーー！！",
+        p2UltCutInTitle: "モモンガ駄々っ子大暴走！！",
+        modalTitle: "うさぎ＆モモンガ 全16種 表情図鑑・プレビュー",
+        modalSub: "カードをクリックすると拡大プレビューと効果音を確認でき、試合画面でもテストできます！",
+        applyInGame: "▶ バトル画面でこの表情を3.5秒間テスト表示",
+        usagiCries: ["ヤハ！！", "ウラ！！", "ハァ？！", "ウラヤハ！！", "プルル〜！", "イヤッハ！"],
+        momongaCries: ["よこせー！", "褒めろー！", "グルル…！", "返せー！", "ヤダヤダ！"],
+        momongaTauntCries: ["見て見て〜ぶりっ子💖", "可愛いでしょ✨", "キラキラ〜💖"],
+        momongaHurtCries: ["ギャッ！", "イテッ！", "ワァァン😭", "ひどいー！", "やめてー！", "グエッ！"],
+        hitWords: ["バシッ！", "ドカッ！", "バキッ！", "ペチッ！", "ズドン！", "ボコッ！"]
+      }
+    };
+
+    let currentLang = 'ko';
+
+    /********************************************************************
+     * 2. PROCEDURAL WEB AUDIO SOUND & VOICE SYNTHESIS ENGINE
+     ********************************************************************/
+    class ArcadeSoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      speak(text, pitch = 1.15, rate = 1.15) {
+        if (this.muted || !('speechSynthesis' in window)) return;
+        try {
+          window.speechSynthesis.cancel();
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = 'en-US';
+          utter.pitch = pitch;
+          utter.rate = rate;
+          utter.volume = 0.65;
+          window.speechSynthesis.speak(utter);
+        } catch (e) {}
+      }
+
+      // Cute synth voice chirp for Usagi & Momonga expressions
+      playCharacterVoice(isUsagi, type) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        if (isUsagi) {
+          if (type === 'LIGHT') {
+            // "Yaha!" high energetic chirp
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(520, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+            osc.frequency.exponentialRampToValueAtTime(640, now + 0.16);
+            gain.gain.setValueAtTime(0.28, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.17);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.18);
+          } else if (type === 'HEAVY') {
+            // "URAA!!" deeper tough shout
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(280, now);
+            osc.frequency.linearRampToValueAtTime(420, now + 0.12);
+            osc.frequency.exponentialRampToValueAtTime(190, now + 0.26);
+            gain.gain.setValueAtTime(0.32, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.27);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.28);
+          }
+        } else {
+          if (type === 'TAUNT') {
+            // Cute sparkle chime for Momonga's "Cute Taunt"
+            [784, 987, 1174, 1568].forEach((f, idx) => {
+              const o = this.ctx.createOscillator();
+              const g = this.ctx.createGain();
+              o.type = 'sine';
+              o.frequency.setValueAtTime(f, now + idx * 0.055);
+              g.gain.setValueAtTime(0.2, now + idx * 0.055);
+              g.gain.exponentialRampToValueAtTime(0.008, now + idx * 0.055 + 0.22);
+              o.connect(g);
+              g.connect(this.ctx.destination);
+              o.start(now + idx * 0.055);
+              o.stop(now + idx * 0.055 + 0.23);
+            });
+          } else if (type === 'CRY') {
+            // Momonga crying warble
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(660, now);
+            osc.frequency.linearRampToValueAtTime(480, now + 0.12);
+            osc.frequency.linearRampToValueAtTime(590, now + 0.22);
+            osc.frequency.exponentialRampToValueAtTime(340, now + 0.35);
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.36);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.37);
+          }
+        }
+      }
+
+      playLightHit() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(380 + Math.random() * 90, now);
+        osc.frequency.exponentialRampToValueAtTime(70, now + 0.09);
+
+        gain.gain.setValueAtTime(0.45, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.095);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.1);
+
+        this.playNoiseBurst(0.06, 1850, 0.36);
+      }
+
+      playHeavyHit() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(240, now);
+        osc.frequency.exponentialRampToValueAtTime(32, now + 0.24);
+
+        gain.gain.setValueAtTime(0.68, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.26);
+
+        this.playNoiseBurst(0.19, 920, 0.58);
+      }
+
+      playBlock() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(720, now);
+        osc.frequency.setValueAtTime(980, now + 0.035);
+
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.095);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      }
+
+      playJump() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(190, now);
+        osc.frequency.exponentialRampToValueAtTime(540, now + 0.14);
+
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.155);
+      }
+
+      playUltimateStart() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const notes = [330, 440, 659, 880, 1318, 1760];
+        notes.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + i * 0.045);
+          gain.gain.setValueAtTime(0.26, now + i * 0.045);
+          gain.gain.exponentialRampToValueAtTime(0.008, now + i * 0.045 + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.045);
+          osc.stop(now + i * 0.045 + 0.26);
+        });
+      }
+
+      playUltimateExplosion() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(175, now);
+        osc.frequency.exponentialRampToValueAtTime(22, now + 0.58);
+
+        gain.gain.setValueAtTime(0.82, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.59);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.6);
+
+        this.playNoiseBurst(0.46, 520, 0.72);
+      }
+
+      playReadyFight(isFight = false) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        if (!isFight) {
+          [261.6, 329.6, 392.0].forEach((f, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, now + idx * 0.06);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + idx * 0.06);
+            osc.stop(now + 0.46);
+          });
+          this.speak("Ready", 1.0, 1.0);
+        } else {
+          [523.25, 659.25, 783.99, 1046.5].forEach((f) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(f, now);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.43);
+          });
+          this.speak("Fight!", 1.2, 1.25);
+        }
+      }
+
+      playKO(playerWon = true) {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+
+        this.playUltimateExplosion();
+        this.speak("K. O.!", 0.85, 0.9);
+
+        setTimeout(() => {
+          if (this.muted || !this.ctx) return;
+          const now = this.ctx.currentTime;
+          const melody = playerWon
+            ? [523.25, 659.25, 783.99, 1046.5]
+            : [392.0, 369.99, 349.23, 311.13];
+
+          melody.forEach((f, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, now + i * 0.14);
+            gain.gain.setValueAtTime(0.25, now + i * 0.14);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.14 + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + i * 0.14);
+            osc.stop(now + i * 0.14 + 0.36);
+          });
+        }, 620);
+      }
+
+      playNoiseBurst(duration = 0.08, filterFreq = 1200, volume = 0.3) {
+        if (!this.ctx) return;
+        const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.45));
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = filterFreq;
+
+        const gain = this.ctx.createGain();
+        gain.gain.value = volume;
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+      }
+    }
+
+    const sfx = new ArcadeSoundEngine();
+
+    /********************************************************************
+     * 3. HIGH-PRECISION HAND-DRAWN BRUSH-PEN CHARACTER & 16-EXPRESSION RENDERER
+     *    Faithfully recreates Image 1 (Momonga) & Image 2 (Usagi) + 8 expressions each!
+     ********************************************************************/
+    function drawStarShape(c, cx, cy, spikes, outerR, innerR, color = '#fde047') {
+      let rot = (Math.PI / 2) * 3;
+      const step = Math.PI / spikes;
+      c.save();
+      c.fillStyle = color;
+      c.beginPath();
+      c.moveTo(cx, cy - outerR);
+      for (let i = 0; i < spikes; i++) {
+        c.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+        rot += step;
+        c.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+        rot += step;
+      }
+      c.closePath();
+      c.fill();
+      c.restore();
+    }
+
+    function drawHeartShape(c, x, y, size, color = '#f43f5e') {
+      c.save();
+      c.translate(x, y);
+      c.fillStyle = color;
+      c.beginPath();
+      c.moveTo(0, size * 0.3);
+      c.bezierCurveTo(-size, -size * 0.4, -size * 0.5, -size, 0, -size * 0.4);
+      c.bezierCurveTo(size * 0.5, -size, size, -size * 0.4, 0, size * 0.3);
+      c.fill();
+      c.restore();
+    }
+
+    /**
+     * Renders Usagi (Image 2: Cream oval body, pink-lined tall ears, arched brows,
+     * 3-line pink cheek blushes, ω mouth, wiggling butt lines) with 8 dynamic expressions.
+     * Origin (0,0) is centered at the character's head/body center.
+     */
+    function renderUsagiArt(c, expr = 'IDLE', tick = 0, isCloseup = false) {
+      c.save();
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      const ink = '#111111';
+      const cream = '#fdf3c7';
+      const earPink = '#f9a8c9';
+      const blushPink = '#f7a1b5';
+
+      const earWiggle = Math.sin(tick * 0.18) * 0.04;
+
+      // 1) LONG RABBIT EARS (Slightly tilted left like Image 2)
+      // Left Ear
+      c.save();
+      c.translate(-14, -52);
+      c.rotate(-0.18 + earWiggle);
+      c.fillStyle = cream;
+      c.strokeStyle = ink;
+      c.lineWidth = 4.8;
+      c.beginPath();
+      c.ellipse(0, -28, 11, 32, 0, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      // Pink Inner Ear
+      c.fillStyle = earPink;
+      c.beginPath();
+      c.ellipse(1, -25, 5.5, 23, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+
+      // Right Ear
+      c.save();
+      c.translate(6, -54);
+      c.rotate(-0.12 - earWiggle);
+      c.fillStyle = cream;
+      c.strokeStyle = ink;
+      c.lineWidth = 4.8;
+      c.beginPath();
+      c.ellipse(0, -28, 11, 32, 0, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      // Pink Inner Ear
+      c.fillStyle = earPink;
+      c.beginPath();
+      c.ellipse(0, -25, 5.5, 23, 0, 0, Math.PI * 2);
+      c.fill();
+      c.restore();
+
+      // 2) CREAM PLUMP OVAL HEAD & BODY (Exact silhouette of Image 2)
+      c.fillStyle = cream;
+      c.strokeStyle = ink;
+      c.lineWidth = 5.2;
+
+      if (!isCloseup) {
+        // Tiny Cute Feet at bottom
+        c.beginPath();
+        c.ellipse(-2, 62, 7, 6, 0.2, 0, Math.PI * 2);
+        c.ellipse(9, 61, 7, 6, -0.2, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+      }
+
+      // Main Plump Head + Pear Body Contour
+      c.beginPath();
+      c.moveTo(-18, -50);
+      c.bezierCurveTo(-58, -46, -64, 8, -38, 30); // Left cheek
+      c.bezierCurveTo(-42, 48, -22, 62, 4, 60);   // Bottom left hip
+      c.bezierCurveTo(32, 58, 44, 40, 38, 22);    // Bottom right hip
+      c.bezierCurveTo(60, 2, 54, -48, 12, -52);   // Right cheek
+      c.closePath();
+      c.fill();
+      c.stroke();
+
+      // Cute Arms (Raised in WIN/LIGHT/SUPER, or curved at sides like Image 2)
+      c.lineWidth = 4.8;
+      if (expr === 'WIN' || expr === 'SUPER') {
+        // Arms raised high in celebration / roar!
+        c.fillStyle = cream;
+        c.beginPath();
+        c.ellipse(-44, 4, 11, 7, -0.6, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+        c.beginPath();
+        c.ellipse(44, 4, 11, 7, 0.6, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+      } else {
+        // Original Image 2 side arms
+        c.fillStyle = cream;
+        c.beginPath();
+        c.arc(-36, 34, 8, 0.4, Math.PI * 1.4);
+        c.fill();
+        c.stroke();
+
+        c.beginPath();
+        c.arc(38, 30, 7.5, -Math.PI * 0.4, Math.PI * 0.6);
+        c.fill();
+        c.stroke();
+      }
+
+      // Wiggling Butt / Tail Motion Lines on bottom-left (Signature detail from Image 2!)
+      if (!isCloseup) {
+        const wagOffset = Math.sin(tick * 0.45) * 2;
+        c.strokeStyle = ink;
+        c.lineWidth = 3.8;
+        const tailLines = [
+          [-30, 48, -40, 50 + wagOffset],
+          [-27, 55, -36, 61 + wagOffset],
+          [-20, 60, -25, 68 + wagOffset],
+          [-13, 63, -15, 70 + wagOffset]
+        ];
+        tailLines.forEach(([x1, y1, x2, y2]) => {
+          c.beginPath();
+          c.moveTo(x1, y1);
+          c.lineTo(x2, y2);
+          c.stroke();
+        });
+      }
+
+      // 3) PINK CHEEK BLUSHES WITH 3 BLACK HASH LINES (Exact Image 2 detail)
+      c.fillStyle = blushPink;
+      c.beginPath();
+      c.ellipse(-30, 2, 13, 8.5, -0.08, 0, Math.PI * 2);
+      c.ellipse(30, -1, 13, 8.5, -0.08, 0, Math.PI * 2);
+      c.fill();
+
+      // 3 Black Hash Marks inside each blush
+      c.strokeStyle = ink;
+      c.lineWidth = 2.8;
+      [-35, -30, -25].forEach((bx) => {
+        c.beginPath();
+        c.moveTo(bx, -1);
+        c.lineTo(bx - 1, 5);
+        c.stroke();
+      });
+      [25, 30, 35].forEach((bx) => {
+        c.beginPath();
+        c.moveTo(bx, -4);
+        c.lineTo(bx - 1, 2);
+        c.stroke();
+      });
+
+      // 4) 8 DYNAMIC FACIAL EXPRESSIONS FOR USAGI
+      c.strokeStyle = ink;
+      c.fillStyle = ink;
+
+      if (expr === 'IDLE') {
+        // 1) 기본(Idle): High arched eyebrows + shiny black eyes + ω mouth
+        c.lineWidth = 3.8;
+        c.beginPath();
+        c.arc(-16, -18, 14, Math.PI * 1.1, Math.PI * 1.85);
+        c.stroke();
+        c.beginPath();
+        c.arc(15, -19, 14, Math.PI * 1.15, Math.PI * 1.9);
+        c.stroke();
+
+        // Shiny Black Eyes
+        [-14, 13].forEach((ex, i) => {
+          const ey = i === 0 ? -8 : -9;
+          c.fillStyle = ink;
+          c.beginPath();
+          c.ellipse(ex, ey, 6.5, 7.2, 0, 0, Math.PI * 2);
+          c.fill();
+          // Big top-left white shine + small bottom shine (exact Image 2 look)
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.arc(ex - 1.5, ey - 2.2, 2.5, 0, Math.PI * 2);
+          c.arc(ex + 1.5, ey + 2.2, 1.3, 0, Math.PI * 2);
+          c.fill();
+          // Subtle lower eyelid curve
+          c.strokeStyle = ink;
+          c.lineWidth = 2.2;
+          c.beginPath();
+          c.arc(ex, ey + 9, 4, Math.PI * 1.2, Math.PI * 1.8);
+          c.stroke();
+        });
+
+        // ω Mouth + cute lower lip curve
+        c.lineWidth = 3.6;
+        c.beginPath();
+        c.arc(-4.5, 0, 4.8, 0.15, Math.PI - 0.1);
+        c.arc(4.5, 0, 4.8, 0.1, Math.PI - 0.15);
+        c.stroke();
+        c.beginPath();
+        c.arc(1, 5.5, 3.5, 0.2, Math.PI * 0.9);
+        c.stroke();
+
+      } else if (expr === 'LIGHT') {
+        // 2) 약공격(Light Attack): Energetic angled brows + wide open "야하!" mouth
+        c.lineWidth = 4.2;
+        c.beginPath();
+        c.moveTo(-28, -22);
+        c.lineTo(-7, -16);
+        c.moveTo(28, -23);
+        c.lineTo(7, -16);
+        c.stroke();
+
+        [-14, 13].forEach((ex) => {
+          c.fillStyle = ink;
+          c.beginPath();
+          c.ellipse(ex, -8, 6.5, 7.5, 0, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.arc(ex - 1.5, -10.5, 2.6, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // Wide open shouting mouth ("야하!")
+        c.fillStyle = '#e11d48';
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.moveTo(-10, -1);
+        c.quadraticCurveTo(0, -3, 10, -1);
+        c.bezierCurveTo(12, 14, -12, 14, -10, -1);
+        c.closePath();
+        c.fill();
+        c.stroke();
+        // Pink tongue inside
+        c.fillStyle = '#fda4af';
+        c.beginPath();
+        c.arc(0, 7, 5.5, Math.PI, 0);
+        c.fill();
+
+      } else if (expr === 'HEAVY') {
+        // 3) 강공격(Heavy Attack): Intense Gekiga (극화체) thick brows + tiny fierce pupils + clenched teeth ("우라아!!")
+        c.lineWidth = 5.8;
+        c.beginPath();
+        c.moveTo(-30, -24);
+        c.lineTo(-5, -13);
+        c.moveTo(30, -24);
+        c.lineTo(5, -13);
+        c.stroke();
+
+        // Nose bridge wrinkle lines for comic intensity
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.moveTo(-3, -18);
+        c.lineTo(-3, -11);
+        c.moveTo(3, -18);
+        c.lineTo(3, -11);
+        c.stroke();
+
+        // White sclera with tiny intense pupils
+        [-14, 14].forEach((ex) => {
+          c.fillStyle = '#ffffff';
+          c.lineWidth = 3.4;
+          c.beginPath();
+          c.ellipse(ex, -7, 8, 6, 0, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+
+          c.fillStyle = ink;
+          c.beginPath();
+          c.arc(ex, -7, 2.6, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // Comic cheek shadow lines
+        c.lineWidth = 2.5;
+        c.beginPath();
+        c.moveTo(-22, 4);
+        c.lineTo(-17, 12);
+        c.moveTo(22, 4);
+        c.lineTo(17, 12);
+        c.stroke();
+
+        // Gritted teeth roaring mouth
+        c.fillStyle = '#ffffff';
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.roundRect(-14, 1, 28, 12, 4);
+        c.fill();
+        c.stroke();
+        // Teeth grid
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.moveTo(-13, 7);
+        c.lineTo(13, 7);
+        [-6, 0, 6].forEach((tx) => {
+          c.moveTo(tx, 1);
+          c.lineTo(tx, 13);
+        });
+        c.stroke();
+
+      } else if (expr === 'SUPER') {
+        // 4) 필살기(Super Attack): Golden Star/Eye-glow + roaring mouth ("우라야하!!")
+        c.lineWidth = 5;
+        c.beginPath();
+        c.moveTo(-30, -25);
+        c.lineTo(-6, -15);
+        c.moveTo(30, -25);
+        c.lineTo(6, -15);
+        c.stroke();
+
+        // Glowing eyes with golden stars
+        [-15, 15].forEach((ex) => {
+          c.fillStyle = ink;
+          c.beginPath();
+          c.arc(ex, -8, 8, 0, Math.PI * 2);
+          c.fill();
+          drawStarShape(c, ex, -8, 4, 9 + Math.sin(tick * 0.6) * 2, 3.5, '#fde047');
+        });
+
+        // Giant roaring mouth
+        c.fillStyle = '#be123c';
+        c.lineWidth = 3.8;
+        c.beginPath();
+        c.arc(0, 6, 13, 0, Math.PI, false);
+        c.closePath();
+        c.fill();
+        c.stroke();
+        c.fillStyle = '#fda4af';
+        c.beginPath();
+        c.arc(0, 12, 7, Math.PI, 0);
+        c.fill();
+
+      } else if (expr === 'GUARD') {
+        // 5) 가드(Guard): Tightly closed mouth (ㅡ) + squinting eyes + sweat drop on cheek
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(-25, -18);
+        c.lineTo(-7, -15);
+        c.moveTo(25, -18);
+        c.lineTo(7, -15);
+        c.stroke();
+
+        // Half-squinting tense eyes
+        [-14, 13].forEach((ex) => {
+          c.fillStyle = ink;
+          c.beginPath();
+          c.ellipse(ex, -7, 6, 4.5, 0, 0, Math.PI * 2);
+          c.fill();
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.arc(ex - 1.5, -8, 1.8, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // Firmly closed straight line mouth (ㅡ)
+        c.lineWidth = 4;
+        c.beginPath();
+        c.moveTo(-10, 4);
+        c.lineTo(10, 4);
+        c.stroke();
+
+        // Blue Sweat Drop on left temple/cheek
+        c.fillStyle = '#38bdf8';
+        c.lineWidth = 2.4;
+        c.beginPath();
+        c.moveTo(-36, -18);
+        c.bezierCurveTo(-42, -8, -30, -8, -36, -18);
+        c.fill();
+        c.stroke();
+
+      } else if (expr === 'HURT') {
+        // 6) 피격(Hurt): Tightly squeezed > < eyes + shocked Д mouth
+        c.lineWidth = 4.2;
+        // Left '>' eye
+        c.beginPath();
+        c.moveTo(-23, -14);
+        c.lineTo(-9, -8);
+        c.lineTo(-23, -2);
+        c.stroke();
+        // Right '<' eye
+        c.beginPath();
+        c.moveTo(23, -14);
+        c.lineTo(9, -8);
+        c.lineTo(23, -2);
+        c.stroke();
+
+        // Д / trapezoid shocked mouth
+        c.fillStyle = '#f43f5e';
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.moveTo(-6, 1);
+        c.lineTo(6, 1);
+        c.lineTo(11, 12);
+        c.lineTo(-11, 12);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+      } else if (expr === 'WIN') {
+        // 7) 승리(WIN): Happy ^ ω ^ curved smiling eyes + proud smile + peace/sparkles
+        c.lineWidth = 4.2;
+        // Happy ^ ^ eyes
+        c.beginPath();
+        c.arc(-14, -6, 8, Math.PI * 1.15, Math.PI * 1.85);
+        c.stroke();
+        c.beginPath();
+        c.arc(14, -6, 8, Math.PI * 1.15, Math.PI * 1.85);
+        c.stroke();
+
+        // Big Happy ω mouth
+        c.lineWidth = 3.8;
+        c.beginPath();
+        c.arc(-5, 1, 5.2, 0.1, Math.PI - 0.1);
+        c.arc(5, 1, 5.2, 0.1, Math.PI - 0.1);
+        c.stroke();
+
+        // Sparkles around head
+        drawStarShape(c, -42, -26, 4, 9, 3.5, '#fde047');
+        drawStarShape(c, 44, -22, 4, 8, 3, '#fde047');
+
+      } else if (expr === 'LOSE') {
+        // 8) 패배(LOSE): Swirling @ @ spiral eyes + floating white soul leaving mouth
+        c.lineWidth = 3;
+        [-14, 14].forEach((ex) => {
+          c.beginPath();
+          for (let a = 0; a < Math.PI * 3.6; a += 0.25) {
+            const r = a * 0.85;
+            const px = ex + Math.cos(a + tick * 0.25) * r;
+            const py = -8 + Math.sin(a + tick * 0.25) * r;
+            if (a === 0) c.moveTo(px, py);
+            else c.lineTo(px, py);
+          }
+          c.stroke();
+        });
+
+        // Droopy open mouth with white ghost soul floating out
+        c.fillStyle = '#475569';
+        c.beginPath();
+        c.ellipse(0, 6, 7, 5, 0, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+        // Escaping Soul
+        const soulY = Math.sin(tick * 0.15) * 4;
+        c.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        c.strokeStyle = '#94a3b8';
+        c.lineWidth = 2.2;
+        c.beginPath();
+        c.moveTo(2, 6);
+        c.quadraticCurveTo(18, -2 + soulY, 24, -18 + soulY);
+        c.arc(28, -24 + soulY, 9, Math.PI, 0, false);
+        c.quadraticCurveTo(32, -8 + soulY, 4, 7);
+        c.fill();
+        c.stroke();
+      }
+
+      c.restore();
+    }
+
+    /**
+     * Renders Momonga (Image 1: Fluffy white fur face, big sky-blue tail on top,
+     * crescent bottom-sclera eyes, sky-blue nose, 4-line pink blushes, tiny side hands)
+     * with 8 dynamic expressions!
+     */
+    function renderMomongaArt(c, expr = 'IDLE', tick = 0, isCloseup = false) {
+      c.save();
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      const ink = '#111111';
+      const furWhite = expr === 'DIZZY' ? '#e2e8f0' : '#ffffff';
+      const tailBlue = '#bce3fa';
+      const noseBlue = '#b3dff7';
+      const blushPink = '#f7a8b8';
+
+      // Horizontal squish when hit!
+      if (expr === 'HURT_HEAVY') {
+        c.scale(1.16, 0.84);
+      } else if (expr === 'HURT_LIGHT') {
+        c.scale(1.06, 0.94);
+      }
+
+      // 1) BIG FLUFFY SKY-BLUE TAIL ABOVE HEAD (Signature Image 1 feature)
+      c.save();
+      const tailSway = Math.sin(tick * 0.16) * 0.06;
+      c.translate(16, -54);
+      c.rotate(0.32 + tailSway);
+      c.fillStyle = tailBlue;
+
+      if (expr === 'LOSE') {
+        // Spiky bristled tail in LOSE expression!
+        c.strokeStyle = ink;
+        c.lineWidth = 4;
+        c.beginPath();
+        for (let i = 0; i < 14; i++) {
+          const ang = (i / 14) * Math.PI * 2;
+          const r = i % 2 === 0 ? 34 : 21;
+          const tx = Math.cos(ang) * r * 0.85;
+          const ty = Math.sin(ang) * r;
+          if (i === 0) c.moveTo(tx, ty);
+          else c.lineTo(tx, ty);
+        }
+        c.closePath();
+        c.fill();
+        c.stroke();
+      } else {
+        // Soft fluffy oval blue tail with hand-drawn black fur dashes around perimeter (Exact Image 1)
+        c.beginPath();
+        c.ellipse(0, 0, 24, 31, 0, 0, Math.PI * 2);
+        c.fill();
+
+        c.strokeStyle = ink;
+        c.lineWidth = 3.8;
+        const dashAngles = [-2.4, -1.9, -1.3, -0.7, -0.1, 0.5, 1.1, 1.7, 2.3];
+        dashAngles.forEach((a) => {
+          const x1 = Math.cos(a) * 19;
+          const y1 = Math.sin(a) * 25;
+          const x2 = Math.cos(a + 0.15) * 26;
+          const y2 = Math.sin(a + 0.15) * 33;
+          c.beginPath();
+          c.moveTo(x1, y1);
+          c.lineTo(x2, y2);
+          c.stroke();
+        });
+      }
+      c.restore();
+
+      // 2) ROUNDED EARS WITH SKY-BLUE INNER FUR (Exact Image 1)
+      // Left Ear
+      c.save();
+      c.translate(-22, -36);
+      c.rotate(-0.15);
+      c.fillStyle = furWhite;
+      c.strokeStyle = ink;
+      c.lineWidth = 4.6;
+      c.beginPath();
+      c.arc(0, 0, 14, Math.PI * 0.75, Math.PI * 2.15);
+      c.fill();
+      c.stroke();
+      // Sky blue inner ear
+      c.fillStyle = tailBlue;
+      c.beginPath();
+      c.ellipse(0, 1, 7, 9, 0, 0, Math.PI * 2);
+      c.fill();
+      // Inner ear Y-fur line
+      c.lineWidth = 3.2;
+      c.beginPath();
+      c.moveTo(1, -6);
+      c.lineTo(0, 6);
+      c.moveTo(-4, 1);
+      c.lineTo(0, 4);
+      c.stroke();
+      c.restore();
+
+      // Right Ear
+      c.save();
+      c.translate(28, -28);
+      c.rotate(0.25);
+      c.fillStyle = furWhite;
+      c.strokeStyle = ink;
+      c.lineWidth = 4.6;
+      c.beginPath();
+      c.arc(0, 0, 14, Math.PI * 0.85, Math.PI * 2.25);
+      c.fill();
+      c.stroke();
+      c.fillStyle = tailBlue;
+      c.beginPath();
+      c.ellipse(0, 1, 7, 9, 0, 0, Math.PI * 2);
+      c.fill();
+      c.lineWidth = 3.2;
+      c.beginPath();
+      c.moveTo(0, -6);
+      c.lineTo(-1, 6);
+      c.moveTo(-1, 3);
+      c.lineTo(4, 1);
+      c.stroke();
+      c.restore();
+
+      // 3) FLUFFY WHITE HEAD & CHEEK TUFTS + TINY PAWS (Exact Image 1)
+      c.fillStyle = furWhite;
+      c.strokeStyle = ink;
+      c.lineWidth = 4.8;
+      c.beginPath();
+      c.ellipse(0, 4, 48, 38, 0.06, 0, Math.PI * 2);
+      c.fill();
+
+      // Top & Bottom head outline arcs (leaving cheek sides sketchy like Image 1)
+      c.beginPath();
+      c.arc(2, 0, 44, -Math.PI * 0.72, -Math.PI * 0.25);
+      c.stroke();
+      c.beginPath();
+      c.arc(0, 4, 45, Math.PI * 0.2, Math.PI * 0.82);
+      c.stroke();
+
+      // Sketchy Side Fur Tufts (Left & Right cheeks)
+      const leftTufts = [
+        [-38, -14, -50, -18],
+        [-42, -4, -54, -5],
+        [-42, 6, -53, 9],
+        [-38, 15, -48, 22]
+      ];
+      const rightTufts = [
+        [42, -10, 52, -12],
+        [44, 0, 55, 3],
+        [43, 10, 54, 15],
+        [38, 20, 46, 28]
+      ];
+      c.lineWidth = 4;
+      [...leftTufts, ...rightTufts].forEach(([x1, y1, x2, y2]) => {
+        c.beginPath();
+        c.moveTo(x1, y1);
+        c.lineTo(x2, y2);
+        c.stroke();
+      });
+
+      // Tiny Cute Paws (Either on cheeks during TAUNT, or sticking out on sides like Image 1)
+      c.fillStyle = furWhite;
+      c.lineWidth = 3.8;
+      if (expr === 'TAUNT') {
+        // Both paws pressed against cheeks ("봐봐~ 귀여운 척!")
+        c.beginPath();
+        c.ellipse(-24, 18, 9, 6, 0.4, 0, Math.PI * 2);
+        c.ellipse(22, 18, 9, 6, -0.4, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+      } else {
+        // Original Image 1 cute little scalloped paws on left and bottom-right
+        c.beginPath();
+        c.arc(-55, 8, 6.5, Math.PI * 0.4, Math.PI * 1.6);
+        c.fill();
+        c.stroke();
+
+        c.beginPath();
+        c.arc(48, 26, 6.5, -Math.PI * 0.4, Math.PI * 0.7);
+        c.fill();
+        c.stroke();
+      }
+
+      // 4) PINK BLUSHES WITH 4 DIAGONAL HASH LINES (Exact Image 1)
+      c.fillStyle = blushPink;
+      c.beginPath();
+      c.ellipse(-28, 12, 12.5, 7.5, 0.2, 0, Math.PI * 2);
+      c.ellipse(26, 17, 12.5, 7.5, 0.2, 0, Math.PI * 2);
+      c.fill();
+
+      c.strokeStyle = ink;
+      c.lineWidth = 2.4;
+      [-34, -30, -26, -22].forEach((bx) => {
+        c.beginPath();
+        c.moveTo(bx + 2, 9);
+        c.lineTo(bx - 2, 14);
+        c.stroke();
+      });
+      [20, 24, 28, 32].forEach((bx) => {
+        c.beginPath();
+        c.moveTo(bx + 2, 14);
+        c.lineTo(bx - 2, 19);
+        c.stroke();
+      });
+
+      // 5) SKY-BLUE OVAL NOSE IN CENTER (Exact Image 1)
+      c.fillStyle = noseBlue;
+      c.beginPath();
+      c.ellipse(-2, 6, 8.5, 7, 0, 0, Math.PI * 2);
+      c.fill();
+
+      // 6) 8 DYNAMIC FACIAL EXPRESSIONS FOR MOMONGA
+      const eyePositions = [
+        { x: -19, y: 2, tilt: 0.18 },
+        { x: 16, y: 6, tilt: 0.18 }
+      ];
+
+      if (expr === 'IDLE') {
+        // 1) 기본(Idle): Iconic bottom crescent white sclera + dark top pupil + cute open mouth
+        // Tiny inner brow ticks
+        c.strokeStyle = ink;
+        c.lineWidth = 3.2;
+        c.beginPath();
+        c.moveTo(-10, -4);
+        c.lineTo(-8, -1);
+        c.moveTo(8, -2);
+        c.lineTo(6, 1);
+        c.stroke();
+
+        eyePositions.forEach(({ x, y, tilt }) => {
+          c.save();
+          c.translate(x, y);
+          c.rotate(tilt);
+          // Outer dark eye oval
+          c.fillStyle = '#261710';
+          c.strokeStyle = ink;
+          c.lineWidth = 3.8;
+          c.beginPath();
+          c.ellipse(0, 0, 10.5, 8.5, 0, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+
+          // Top white oval highlight (like Image 1)
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.ellipse(0, -1.5, 6.5, 4.2, 0, 0, Math.PI * 2);
+          c.fill();
+
+          // Bottom crescent white sclera (Signature Momonga look in Image 1!)
+          c.beginPath();
+          c.arc(0, 1, 8.2, 0.15, Math.PI - 0.15);
+          c.fill();
+          c.restore();
+        });
+
+        // Cute small open mouth + chin curve (Exact Image 1)
+        c.strokeStyle = ink;
+        c.lineWidth = 3.4;
+        c.beginPath();
+        c.moveTo(-7, 14);
+        c.quadraticCurveTo(-3, 18, -2, 13);
+        c.quadraticCurveTo(1, 18, 5, 16);
+        c.stroke();
+        // Open mouth loop
+        c.beginPath();
+        c.arc(-2, 17, 3.8, 0, Math.PI);
+        c.stroke();
+        // Tiny chin curve underneath
+        c.beginPath();
+        c.arc(-2, 24, 3, 0.2, Math.PI - 0.2);
+        c.stroke();
+
+      } else if (expr === 'TAUNT') {
+        // 2) 귀여운 척 도발(Taunt): Ultra-sparkling giant eyes + floating hearts ("봐봐~ 귀여운 척!")
+        eyePositions.forEach(({ x, y }) => {
+          c.fillStyle = ink;
+          c.beginPath();
+          c.ellipse(x, y, 11.5, 10.5, 0, 0, Math.PI * 2);
+          c.fill();
+          // Multiple big twinkling highlights
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.arc(x - 3, y - 3, 4.2, 0, Math.PI * 2);
+          c.arc(x + 3.5, y + 3, 2.4, 0, Math.PI * 2);
+          c.fill();
+          drawStarShape(c, x + 2, y - 2, 4, 5, 2, '#fef08a');
+        });
+
+        // Cute 'ω' kissy/angelic mouth
+        c.strokeStyle = ink;
+        c.lineWidth = 3.4;
+        c.beginPath();
+        c.arc(-5, 16, 4, 0, Math.PI);
+        c.arc(3, 16, 4, 0, Math.PI);
+        c.stroke();
+
+        // Floating Pink Hearts
+        const hBounce = Math.sin(tick * 0.25) * 4;
+        drawHeartShape(c, -44, -22 + hBounce, 12, '#f43f5e');
+        drawHeartShape(c, 46, -16 - hBounce, 10, '#ec4899');
+
+      } else if (expr === 'ATTACK') {
+        // 3) 공격/성질부리기(Attack): Fiercely furrowed eyebrows + sharp fangs ("내놔!!")
+        c.strokeStyle = ink;
+        c.lineWidth = 4.8;
+        c.beginPath();
+        c.moveTo(-30, -10);
+        c.lineTo(-8, -1);
+        c.moveTo(28, -6);
+        c.lineTo(6, 2);
+        c.stroke();
+
+        // Angry eyes
+        eyePositions.forEach(({ x, y }) => {
+          c.fillStyle = '#ffffff';
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.ellipse(x, y + 1, 9.5, 7.5, 0, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          c.fillStyle = ink;
+          c.beginPath();
+          c.arc(x, y, 4.5, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // Wide angry shouting mouth with sharp fangs
+        c.fillStyle = '#be123c';
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.roundRect(-13, 14, 24, 13, 5);
+        c.fill();
+        c.stroke();
+
+        // Two sharp white fangs
+        c.fillStyle = '#ffffff';
+        c.beginPath();
+        c.moveTo(-9, 14);
+        c.lineTo(-5, 21);
+        c.lineTo(-2, 14);
+        c.moveTo(3, 14);
+        c.lineTo(6, 21);
+        c.lineTo(9, 14);
+        c.fill();
+
+      } else if (expr === 'HURT_LIGHT') {
+        // 4) 피격-약(Light Hit): Wide popping O O shocked eyes + squished cheek
+        eyePositions.forEach(({ x, y }) => {
+          c.fillStyle = '#ffffff';
+          c.strokeStyle = ink;
+          c.lineWidth = 3.8;
+          c.beginPath();
+          c.arc(x, y, 10.5, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+          // Tiny shocked pupil
+          c.fillStyle = ink;
+          c.beginPath();
+          c.arc(x, y, 2.5, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // Wavy shocked mouth
+        c.fillStyle = '#fb7185';
+        c.beginPath();
+        c.ellipse(-1, 19, 6, 8, 0.2, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+
+      } else if (expr === 'HURT_HEAVY') {
+        // 5) 피격-강/필살기 맞음(Heavy Hit): Gushing waterfall tears (T Д T) + flattened face
+        // Gushing Blue Waterfall Tears streams on both sides!
+        c.fillStyle = '#38bdf8';
+        c.strokeStyle = '#0284c7';
+        c.lineWidth = 2.5;
+        c.beginPath();
+        c.moveTo(-28, 2);
+        c.quadraticCurveTo(-48, 18, -44, 42);
+        c.lineTo(-30, 42);
+        c.quadraticCurveTo(-30, 18, -14, 4);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        c.beginPath();
+        c.moveTo(26, 5);
+        c.quadraticCurveTo(46, 20, 44, 42);
+        c.lineTo(30, 42);
+        c.quadraticCurveTo(28, 20, 12, 7);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+        // Tightly shut T T crying eyes
+        c.strokeStyle = ink;
+        c.lineWidth = 4.4;
+        c.beginPath();
+        c.moveTo(-30, 1);
+        c.lineTo(-10, 3);
+        c.moveTo(8, 4);
+        c.lineTo(28, 6);
+        c.stroke();
+
+        // Giant bawling Д mouth
+        c.fillStyle = '#e11d48';
+        c.lineWidth = 3.6;
+        c.beginPath();
+        c.moveTo(-8, 14);
+        c.lineTo(8, 14);
+        c.lineTo(15, 27);
+        c.lineTo(-15, 27);
+        c.closePath();
+        c.fill();
+        c.stroke();
+
+      } else if (expr === 'DIZZY') {
+        // 6) 빈사/그로기(Dizzy - HP <= 30%): Shaking pupils + pale face + cold sweat drops
+        const jitterX = (Math.random() - 0.5) * 3.5;
+        const jitterY = (Math.random() - 0.5) * 3.5;
+
+        // Vertical purple/blue gloom lines on forehead
+        c.strokeStyle = '#6366f1';
+        c.lineWidth = 2.4;
+        [-26, -20, -14].forEach((gx) => {
+          c.beginPath();
+          c.moveTo(gx, -28);
+          c.lineTo(gx, -14);
+          c.stroke();
+        });
+
+        eyePositions.forEach(({ x, y }) => {
+          c.fillStyle = '#ffffff';
+          c.strokeStyle = ink;
+          c.lineWidth = 3.4;
+          c.beginPath();
+          c.ellipse(x, y, 10, 8, 0, 0, Math.PI * 2);
+          c.fill();
+          c.stroke();
+
+          // Quivering double pupil ring
+          c.fillStyle = ink;
+          c.beginPath();
+          c.arc(x + jitterX, y + jitterY, 3.2, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // Quivering wavy mouth
+        c.strokeStyle = ink;
+        c.lineWidth = 3.2;
+        c.beginPath();
+        c.moveTo(-10, 19);
+        c.quadraticCurveTo(-5, 15, 0, 19);
+        c.quadraticCurveTo(5, 23, 10, 19);
+        c.stroke();
+
+        // Cold sweat drops
+        c.fillStyle = '#38bdf8';
+        c.beginPath();
+        c.arc(36, -6, 4.5, 0, Math.PI * 2);
+        c.arc(-38, -2, 4, 0, Math.PI * 2);
+        c.fill();
+
+      } else if (expr === 'WIN') {
+        // 7) 승리(WIN): Half-lidded smug eyes + cheeky "훗" smirk + sparkles
+        eyePositions.forEach(({ x, y }) => {
+          c.save();
+          c.translate(x, y);
+          c.fillStyle = '#ffffff';
+          c.strokeStyle = ink;
+          c.lineWidth = 3.5;
+          c.beginPath();
+          c.arc(0, 0, 9.5, 0, Math.PI);
+          c.closePath();
+          c.fill();
+          c.stroke();
+
+          // Half-closed smug upper eyelid
+          c.lineWidth = 4.2;
+          c.beginPath();
+          c.moveTo(-11, 0);
+          c.lineTo(11, 0);
+          c.stroke();
+
+          c.fillStyle = ink;
+          c.beginPath();
+          c.arc(2, 4, 3.8, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+        });
+
+        // Smug one-sided smirk ("훗")
+        c.strokeStyle = ink;
+        c.lineWidth = 3.6;
+        c.beginPath();
+        c.moveTo(-8, 18);
+        c.quadraticCurveTo(4, 20, 12, 12);
+        c.stroke();
+
+        // Smug sparkles
+        drawStarShape(c, -44, -20, 4, 9, 3.5, '#38bdf8');
+        drawStarShape(c, 45, -18, 4, 10, 4, '#fde047');
+
+      } else if (expr === 'LOSE') {
+        // 8) 패배(LOSE): Bawling tears & snot bubble + throwing a tantrum
+        // Squeezed crying eyes with tear droplets
+        c.strokeStyle = ink;
+        c.lineWidth = 4.2;
+        c.beginPath();
+        c.moveTo(-28, -2);
+        c.lineTo(-10, 3);
+        c.lineTo(-28, 7);
+        c.moveTo(26, 0);
+        c.lineTo(8, 5);
+        c.lineTo(26, 9);
+        c.stroke();
+
+        // Tears & Snot stream
+        c.fillStyle = '#38bdf8';
+        c.beginPath();
+        c.ellipse(-26, 12, 5, 9, 0.3, 0, Math.PI * 2);
+        c.ellipse(24, 14, 5, 9, -0.3, 0, Math.PI * 2);
+        // Snot stream from blue nose
+        c.ellipse(1, 14, 3.5, 8, 0, 0, Math.PI * 2);
+        c.fill();
+
+        // Screaming tantrum mouth
+        c.fillStyle = '#be123c';
+        c.lineWidth = 3.5;
+        c.beginPath();
+        c.ellipse(-1, 21, 12, 8, 0, 0, Math.PI * 2);
+        c.fill();
+        c.stroke();
+      }
+
+      c.restore();
+    }
+
+    /********************************************************************
+     * 4. GAME STATE & FIGHTER CLASS WITH EXPRESSION RESOLVER
+     ********************************************************************/
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const p1FaceCanvas = document.getElementById('p1-face-canvas');
+    const p1FaceCtx = p1FaceCanvas.getContext('2d');
+    const p2FaceCanvas = document.getElementById('p2-face-canvas');
+    const p2FaceCtx = p2FaceCanvas.getContext('2d');
+
+    const STAGE_WIDTH = 1000;
+    const STAGE_HEIGHT = 540;
+    const GROUND_Y = 445;
+    const GRAVITY = 0.85;
+
+    let aiDifficulty = 'normal';
+    let p1Wins = 0;
+    let p2Wins = 0;
+
+    const gameState = {
+      phase: 'INTRO', // 'INTRO' | 'FIGHT' | 'ULT_CUTIN' | 'KO' | 'RESULT'
+      timer: 60,
+      lastTimerTick: 0,
+      hitStopFrames: 0,
+      screenShake: 0,
+      cameraZoom: 1,
+      ultCutInTimer: 0,
+      ultCutInOwner: null,
+      slowMoFactor: 1,
+      comboCount: 0,
+      maxCombo: 0,
+      comboTimer: 0
+    };
+
+    const particles = [];
+    const shockwaves = [];
+    const floatingTexts = [];
+    const afterimages = [];
+
+    class Fighter {
+      constructor(isPlayer) {
+        this.isPlayer = isPlayer;
+        this.reset();
+      }
+
+      reset() {
+        this.x = this.isPlayer ? 250 : 750;
+        this.y = GROUND_Y;
+        this.vx = 0;
+        this.vy = 0;
+        this.facing = this.isPlayer ? 1 : -1;
+
+        this.hp = 100;
+        this.maxHp = 100;
+        this.trailHp = 100;
+        this.trailDelay = 0;
+
+        this.mp = 0;
+        this.maxMp = 100;
+
+        // States: 'IDLE', 'WALK', 'JUMP', 'ATTACK_LIGHT', 'ATTACK_HEAVY', 'ATTACK_ULT', 'TAUNT', 'GUARD', 'HURT_LIGHT', 'HURT_HEAVY', 'KO', 'WIN'
+        this.state = 'IDLE';
+        this.stateTimer = 0;
+        this.hurtFlash = 0;
+        this.hasHitCurrentAttack = false;
+
+        // Manual expression override from [표정 도감] test button
+        this.overrideExpr = null;
+        this.overrideTimer = 0;
+        this.lastExpr = 'IDLE';
+
+        this.scaleX = 1;
+        this.scaleY = 1;
+        this.rotation = 0;
+        this.animTick = Math.random() * 100;
+
+        this.ultHitsRemaining = 0;
+        this.ultTick = 0;
+      }
+
+      get isGrounded() {
+        return this.y >= GROUND_Y - 1;
+      }
+
+      // Resolves which of the 8 facial expressions should be displayed right now
+      getCurrentExpression() {
+        if (this.overrideTimer > 0 && this.overrideExpr) {
+          return this.overrideExpr;
+        }
+
+        if (this.isPlayer) {
+          // Usagi 8 expressions: IDLE, LIGHT, HEAVY, SUPER, GUARD, HURT, WIN, LOSE
+          if (this.state === 'KO') return 'LOSE';
+          if (this.state === 'WIN') return 'WIN';
+          if (this.state === 'HURT_LIGHT' || this.state === 'HURT_HEAVY') return 'HURT';
+          if (this.state === 'ATTACK_ULT' || (gameState.phase === 'ULT_CUTIN' && gameState.ultCutInOwner === this)) return 'SUPER';
+          if (this.state === 'ATTACK_HEAVY') return 'HEAVY';
+          if (this.state === 'ATTACK_LIGHT') return 'LIGHT';
+          if (this.state === 'GUARD') return 'GUARD';
+          return 'IDLE';
+        } else {
+          // Momonga 8 expressions: IDLE, TAUNT, ATTACK, HURT_LIGHT, HURT_HEAVY, DIZZY, WIN, LOSE
+          if (this.state === 'KO') return 'LOSE';
+          if (this.state === 'WIN') return 'WIN';
+          if (this.state === 'HURT_HEAVY' || (gameState.phase === 'ULT_CUTIN' && gameState.ultCutInOwner === player)) return 'HURT_HEAVY';
+          if (this.state === 'HURT_LIGHT') return 'HURT_LIGHT';
+          if (this.state === 'TAUNT') return 'TAUNT';
+          if (this.state === 'ATTACK_LIGHT' || this.state === 'ATTACK_HEAVY' || this.state === 'ATTACK_ULT') return 'ATTACK';
+          if (this.hp <= 30 && this.hp > 0) return 'DIZZY';
+          return 'IDLE';
+        }
+      }
+    }
+
+    const player = new Fighter(true);
+    const enemy = new Fighter(false);
+
+    /********************************************************************
+     * 5. INPUT HANDLING (KEYBOARD + TOUCH / MOUSE BUTTONS)
+     ********************************************************************/
+    const keys = { left: false, right: false, up: false, down: false };
+
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+        e.preventDefault();
+      }
+      const code = e.code;
+      if (code === 'ArrowLeft' || code === 'KeyA') keys.left = true;
+      if (code === 'ArrowRight' || code === 'KeyD') keys.right = true;
+      if (code === 'ArrowUp' || code === 'KeyW') {
+        keys.up = true;
+        triggerPlayerJump();
+      }
+      if (code === 'ArrowDown' || code === 'KeyS') keys.down = true;
+
+      if (code === 'KeyZ' || code === 'KeyJ') triggerPlayerAttack('LIGHT');
+      if (code === 'KeyX' || code === 'KeyK') triggerPlayerAttack('HEAVY');
+      if (code === 'KeyC' || code === 'KeyL' || code === 'Space') triggerPlayerAttack('ULT');
+      if (code === 'KeyV') forceMomongaTaunt();
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const code = e.code;
+      if (code === 'ArrowLeft' || code === 'KeyA') keys.left = false;
+      if (code === 'ArrowRight' || code === 'KeyD') keys.right = false;
+      if (code === 'ArrowUp' || code === 'KeyW') keys.up = false;
+      if (code === 'ArrowDown' || code === 'KeyS') keys.down = false;
+    });
+
+    function bindHoldButton(btnId, keyName, onPressCallback) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+
+      const startHold = (e) => {
+        e.preventDefault();
+        btn.classList.add('pressed');
+        if (keyName) keys[keyName] = true;
+        if (onPressCallback) onPressCallback();
+      };
+
+      const endHold = (e) => {
+        e.preventDefault();
+        btn.classList.remove('pressed');
+        if (keyName) keys[keyName] = false;
+      };
+
+      btn.addEventListener('mousedown', startHold);
+      btn.addEventListener('touchstart', startHold, { passive: false });
+      window.addEventListener('mouseup', endHold);
+      window.addEventListener('touchend', endHold);
+      window.addEventListener('touchcancel', endHold);
+    }
+
+    bindHoldButton('pad-left', 'left');
+    bindHoldButton('pad-right', 'right');
+    bindHoldButton('pad-jump', 'up', () => triggerPlayerJump());
+    bindHoldButton('pad-guard', 'down');
+    bindHoldButton('pad-light', null, () => triggerPlayerAttack('LIGHT'));
+    bindHoldButton('pad-heavy', null, () => triggerPlayerAttack('HEAVY'));
+    bindHoldButton('pad-ult', null, () => triggerPlayerAttack('ULT'));
+
+    /********************************************************************
+     * 6. PLAYER & MOMONGA COMBAT ACTIONS
+     ********************************************************************/
+    function triggerPlayerJump() {
+      if (gameState.phase !== 'FIGHT') return;
+      if (player.isGrounded && !['HURT_LIGHT', 'HURT_HEAVY', 'KO', 'ATTACK_ULT'].includes(player.state)) {
+        player.vy = -17.5;
+        player.scaleX = 0.84;
+        player.scaleY = 1.22;
+        sfx.playJump();
+        spawnDust(player.x, GROUND_Y, 6);
+      }
+    }
+
+    function forceMomongaTaunt() {
+      if (gameState.phase !== 'FIGHT') return;
+      if (enemy.state === 'KO') return;
+      enemy.state = 'TAUNT';
+      enemy.stateTimer = 50;
+      enemy.vx = 0;
+      sfx.playCharacterVoice(false, 'TAUNT');
+      const tauntList = I18N[currentLang].momongaTauntCries;
+      const msg = tauntList[Math.floor(Math.random() * tauntList.length)];
+      spawnFloatingText(enemy.x, enemy.y - 140, msg, '#f472b6', 24);
+    }
+
+    function triggerPlayerAttack(type) {
+      if (gameState.phase !== 'FIGHT') return;
+      if (['HURT_LIGHT', 'HURT_HEAVY', 'KO', 'ATTACK_ULT'].includes(player.state)) return;
+
+      player.facing = (enemy.x >= player.x) ? 1 : -1;
+
+      if (type === 'LIGHT') {
+        if (player.state === 'ATTACK_HEAVY' && player.stateTimer > 8) return;
+        player.state = 'ATTACK_LIGHT';
+        player.stateTimer = 16;
+        player.hasHitCurrentAttack = false;
+        player.vx = player.facing * 6.8;
+        player.scaleX = 1.2;
+        player.scaleY = 0.86;
+        sfx.playCharacterVoice(true, 'LIGHT');
+
+        const cries = I18N[currentLang].usagiCries;
+        spawnFloatingText(player.x, player.y - 130, cries[0], '#fde047', 22);
+      } else if (type === 'HEAVY') {
+        if (player.state === 'ATTACK_HEAVY') return;
+        player.state = 'ATTACK_HEAVY';
+        player.stateTimer = 28;
+        player.hasHitCurrentAttack = false;
+        player.vx = player.facing * 12.5;
+        if (player.isGrounded) player.vy = -6;
+        player.scaleX = 1.32;
+        player.scaleY = 0.78;
+        sfx.playCharacterVoice(true, 'HEAVY');
+
+        const cries = I18N[currentLang].usagiCries;
+        const cry = cries[Math.floor(Math.random() * cries.length)];
+        spawnFloatingText(player.x, player.y - 140, cry, '#fb7185', 28);
+      } else if (type === 'ULT') {
+        if (player.mp < 100) {
+          spawnFloatingText(player.x, player.y - 125, `MP ${Math.floor(player.mp)}% / 100%`, '#f87171', 20);
+          return;
+        }
+        activateUltimateMove(player, enemy);
+      }
+    }
+
+    function activateUltimateMove(attacker, defender) {
+      attacker.mp = 0;
+      attacker.state = 'ATTACK_ULT';
+      attacker.ultHitsRemaining = attacker.isPlayer ? 12 : 6;
+      attacker.ultTick = 0;
+      attacker.facing = (defender.x >= attacker.x) ? 1 : -1;
+
+      gameState.phase = 'ULT_CUTIN';
+      gameState.ultCutInTimer = 46;
+      gameState.ultCutInOwner = attacker;
+      gameState.screenShake = 20;
+
+      sfx.playUltimateStart();
+      updateHUD();
+    }
+
+    function performHitCheck(attacker, defender, attackConfig) {
+      const reachX = attacker.x + attacker.facing * attackConfig.range;
+      const distX = Math.abs(reachX - defender.x);
+      const distY = Math.abs(attacker.y - defender.y);
+
+      if (distX <= attackConfig.hitRadius && distY <= 120) {
+        attacker.hasHitCurrentAttack = true;
+
+        const isGuarding = defender.state === 'GUARD' && defender.facing !== attacker.facing;
+        const actualDamage = isGuarding ? Math.max(1, Math.round(attackConfig.damage * 0.2)) : attackConfig.damage;
+
+        defender.hp = Math.max(0, defender.hp - actualDamage);
+        defender.trailDelay = 24;
+
+        attacker.mp = Math.min(100, attacker.mp + attackConfig.mpGain);
+        defender.mp = Math.min(100, defender.mp + Math.round(attackConfig.mpGain * 0.55));
+
+        const hitX = (attacker.x + defender.x) * 0.5 + (Math.random() * 24 - 12);
+        const hitY = defender.y - 65 + (Math.random() * 30 - 15);
+
+        if (isGuarding) {
+          sfx.playBlock();
+          defender.vx = attacker.facing * (attackConfig.knockbackX * 0.4);
+          defender.scaleX = 0.88;
+          defender.scaleY = 1.12;
+          spawnHitSparks(hitX, hitY, '#38bdf8', 10, false);
+          spawnShockwave(hitX, hitY, '#38bdf8', 55);
+          spawnFloatingText(hitX, hitY - 30, "GUARD!", '#38bdf8', 22);
+        } else {
+          if (attackConfig.isHeavy) {
+            sfx.playHeavyHit();
+            if (!defender.isPlayer) sfx.playCharacterVoice(false, 'CRY');
+            gameState.hitStopFrames = attackConfig.hitStop;
+            gameState.screenShake = attackConfig.shake;
+            gameState.cameraZoom = 1.05;
+          } else {
+            sfx.playLightHit();
+            gameState.hitStopFrames = attackConfig.hitStop;
+            gameState.screenShake = attackConfig.shake;
+          }
+
+          // Trigger distinct Light Hit (O O) vs Heavy Hit (Waterfall Tears T Д T) expression!
+          defender.state = attackConfig.isHeavy ? 'HURT_HEAVY' : 'HURT_LIGHT';
+          defender.stateTimer = attackConfig.stunFrames;
+          defender.hurtFlash = 10;
+          defender.vx = attacker.facing * attackConfig.knockbackX;
+          defender.vy = attackConfig.knockbackY;
+
+          defender.scaleX = attackConfig.isHeavy ? 1.45 : 1.26;
+          defender.scaleY = attackConfig.isHeavy ? 0.64 : 0.78;
+          defender.rotation = attacker.facing * (attackConfig.isHeavy ? 0.36 : 0.18);
+
+          if (attacker.isPlayer) {
+            gameState.comboCount++;
+            gameState.comboTimer = 95;
+            if (gameState.comboCount > gameState.maxCombo) {
+              gameState.maxCombo = gameState.comboCount;
+            }
+          }
+
+          spawnHitSparks(hitX, hitY, attackConfig.isHeavy ? '#f43f5e' : '#facc15', attackConfig.isHeavy ? 26 : 16, true);
+          spawnShockwave(hitX, hitY, attackConfig.isHeavy ? '#fb7185' : '#fde047', attackConfig.isHeavy ? 120 : 75);
+
+          const words = I18N[currentLang].hitWords;
+          const word = words[Math.floor(Math.random() * words.length)];
+          spawnFloatingText(hitX, hitY - 25, word, attackConfig.isHeavy ? '#fb7185' : '#fde047', attackConfig.isHeavy ? 34 : 26);
+
+          spawnFloatingText(defender.x + (Math.random() * 30 - 15), defender.y - 120, `-${actualDamage}`, '#ffffff', attackConfig.isHeavy ? 28 : 22);
+
+          if (!defender.isPlayer && (attackConfig.isHeavy || Math.random() < 0.5)) {
+            const hurtCries = I18N[currentLang].momongaHurtCries;
+            const hCry = hurtCries[Math.floor(Math.random() * hurtCries.length)];
+            spawnFloatingText(defender.x, defender.y - 155, hCry, '#7dd3fc', 24);
+          }
+        }
+
+        updateHUD();
+
+        if (defender.hp <= 0 && aiDifficulty !== 'sandbag') {
+          triggerKO(attacker, defender);
+        } else if (defender.hp <= 0 && aiDifficulty === 'sandbag') {
+          defender.hp = 100;
+          defender.trailHp = 100;
+          spawnFloatingText(defender.x, defender.y - 165, "🥊 SANDBAG REFILL!", '#34d399', 24);
+          updateHUD();
+        }
+      }
+    }
+
+    function triggerKO(winner, loser) {
+      gameState.phase = 'KO';
+      gameState.slowMoFactor = 0.25;
+      gameState.screenShake = 28;
+      gameState.cameraZoom = 1.08;
+
+      loser.hp = 0;
+      loser.state = 'KO';
+      loser.vx = winner.facing * 16;
+      loser.vy = -14;
+
+      winner.state = 'WIN';
+
+      if (winner.isPlayer) p1Wins++;
+      else p2Wins++;
+
+      updateHUD();
+      sfx.playKO(winner.isPlayer);
+
+      const dict = I18N[currentLang];
+      showAnnouncement(dict.koMain, dict.koSub, '#f43f5e');
+
+      setTimeout(() => {
+        gameState.slowMoFactor = 1;
+        hideAnnouncement();
+        showResultModal(winner.isPlayer ? 'WIN' : 'LOSE');
+      }, 2300);
+    }
+
+    /********************************************************************
+     * 7. MOMONGA AI CONTROLLER (WITH CUTE TAUNT & TANTRUM ATTACKS)
+     ********************************************************************/
+    let aiDecisionCooldown = 0;
+
+    function updateMomongaAI() {
+      if (gameState.phase !== 'FIGHT') return;
+      if (['HURT_LIGHT', 'HURT_HEAVY', 'KO', 'ATTACK_ULT', 'WIN', 'TAUNT'].includes(enemy.state)) return;
+
+      if (enemy.state === 'IDLE' || enemy.state === 'WALK') {
+        enemy.facing = (player.x >= enemy.x) ? 1 : -1;
+      }
+
+      if (aiDifficulty === 'sandbag') {
+        // In sandbag mode, Momonga occasionally does the Cute Taunt so player can see it!
+        if (Math.random() < 0.008 && enemy.isGrounded) {
+          forceMomongaTaunt();
+        }
+        return;
+      }
+
+      if (aiDecisionCooldown > 0) aiDecisionCooldown--;
+
+      const dist = Math.abs(player.x - enemy.x);
+      const aggroRate = aiDifficulty === 'hard' ? 1.55 : (aiDifficulty === 'easy' ? 0.45 : 1.0);
+
+      if (enemy.mp >= 100 && dist < 260 && Math.random() < 0.03 * aggroRate) {
+        activateUltimateMove(enemy, player);
+        return;
+      }
+
+      if (dist > 150) {
+        if (aiDecisionCooldown === 0 && Math.random() < 0.015) {
+          // Momonga performs Cute Taunt from a distance!
+          forceMomongaTaunt();
+          aiDecisionCooldown = 45;
+          return;
+        }
+        enemy.state = 'WALK';
+        const speed = aiDifficulty === 'hard' ? 5.5 : (aiDifficulty === 'easy' ? 3.2 : 4.3);
+        enemy.vx = enemy.facing * speed;
+
+        if (enemy.isGrounded && Math.random() < 0.012 * aggroRate) {
+          enemy.vy = -16;
+          sfx.playJump();
+        }
+      } else {
+        if (aiDecisionCooldown === 0) {
+          const roll = Math.random();
+          if ((player.state === 'ATTACK_LIGHT' || player.state === 'ATTACK_HEAVY') && roll < 0.25 * aggroRate) {
+            enemy.state = 'GUARD';
+            enemy.stateTimer = 20;
+            enemy.vx = 0;
+            aiDecisionCooldown = 22;
+          } else if (roll < 0.42 * aggroRate) {
+            enemy.state = 'ATTACK_LIGHT';
+            enemy.stateTimer = 16;
+            enemy.hasHitCurrentAttack = false;
+            enemy.vx = enemy.facing * 5.5;
+            enemy.scaleX = 1.2;
+            enemy.scaleY = 0.85;
+            aiDecisionCooldown = aiDifficulty === 'hard' ? 18 : 34;
+
+            const mCries = I18N[currentLang].momongaCries;
+            spawnFloatingText(enemy.x, enemy.y - 130, mCries[Math.floor(Math.random() * mCries.length)], '#38bdf8', 22);
+          } else if (roll < 0.64 * aggroRate) {
+            enemy.state = 'ATTACK_HEAVY';
+            enemy.stateTimer = 28;
+            enemy.hasHitCurrentAttack = false;
+            enemy.vx = enemy.facing * 10.5;
+            if (enemy.isGrounded) enemy.vy = -5.5;
+            enemy.scaleX = 1.3;
+            enemy.scaleY = 0.78;
+            aiDecisionCooldown = aiDifficulty === 'hard' ? 26 : 45;
+
+            const mCries = I18N[currentLang].momongaCries;
+            spawnFloatingText(enemy.x, enemy.y - 140, mCries[0], '#f43f5e', 26);
+          } else if (roll < 0.76) {
+            forceMomongaTaunt();
+            aiDecisionCooldown = 45;
+          } else {
+            enemy.vx = -enemy.facing * 4.2;
+            aiDecisionCooldown = 20;
+          }
+        }
+      }
+    }
+
+    /********************************************************************
+     * 8. PHYSICS & MAIN UPDATE LOOP
+     ********************************************************************/
+    function updateFighterPhysics(f, opponent) {
+      f.animTick += 0.16 * gameState.slowMoFactor;
+
+      if (f.overrideTimer > 0) {
+        f.overrideTimer--;
+        if (f.overrideTimer <= 0) f.overrideExpr = null;
+      }
+
+      if (f.trailDelay > 0) {
+        f.trailDelay--;
+      } else if (f.trailHp > f.hp) {
+        f.trailHp = Math.max(f.hp, f.trailHp - 0.9);
+      }
+
+      if (f.hurtFlash > 0) f.hurtFlash--;
+
+      // Ultimate Barrage Mode
+      if (f.state === 'ATTACK_ULT') {
+        f.ultTick++;
+        const targetX = opponent.x - f.facing * 75;
+        f.x += (targetX - f.x) * 0.35;
+        f.y = GROUND_Y - 15 + Math.sin(f.ultTick * 0.8) * 18;
+
+        if (f.ultTick % 2 === 0) {
+          afterimages.push({
+            x: f.x,
+            y: f.y,
+            facing: f.facing,
+            isPlayer: f.isPlayer,
+            expr: f.getCurrentExpression(),
+            alpha: 0.55
+          });
+        }
+
+        if (f.ultTick % 5 === 0 && f.ultHitsRemaining > 0) {
+          f.ultHitsRemaining--;
+          const isFinalHit = f.ultHitsRemaining === 0;
+
+          f.hasHitCurrentAttack = false;
+          performHitCheck(f, opponent, {
+            range: 95,
+            hitRadius: 230,
+            damage: isFinalHit ? (f.isPlayer ? 14 : 9) : 3,
+            mpGain: 0,
+            knockbackX: isFinalHit ? 24 : 4,
+            knockbackY: isFinalHit ? -14 : -3.5,
+            hitStop: isFinalHit ? 10 : 2,
+            shake: isFinalHit ? 26 : 10,
+            stunFrames: isFinalHit ? 42 : 16,
+            isHeavy: true
+          });
+
+          if (isFinalHit) {
+            sfx.playUltimateExplosion();
+            spawnShockwave(opponent.x, opponent.y - 60, '#facc15', 220);
+            spawnHitSparks(opponent.x, opponent.y - 60, '#fde047', 42, true);
+            const finText = f.isPlayer ? "URAYAHA FINISH!!" : "TANTRUM FINISH!!";
+            spawnFloatingText(opponent.x, opponent.y - 165, finText, '#facc15', 36);
+            f.state = 'IDLE';
+            f.stateTimer = 15;
+          } else if (f.isPlayer) {
+            const cries = I18N[currentLang].usagiCries;
+            const cry = cries[f.ultHitsRemaining % cries.length];
+            spawnFloatingText(
+              opponent.x + (Math.random() * 140 - 70),
+              opponent.y - 80 + (Math.random() * 90 - 45),
+              cry,
+              '#fef08a',
+              24
+            );
+          }
+        }
+        return;
+      }
+
+      if (f.stateTimer > 0) {
+        f.stateTimer--;
+
+        if (f.state === 'ATTACK_LIGHT' && f.stateTimer === 10 && !f.hasHitCurrentAttack) {
+          performHitCheck(f, opponent, {
+            range: 85,
+            hitRadius: 100,
+            damage: f.isPlayer ? 6 : 5,
+            mpGain: 14,
+            knockbackX: 8.5,
+            knockbackY: -3.5,
+            hitStop: 3,
+            shake: 7,
+            stunFrames: 18,
+            isHeavy: false
+          });
+        } else if (f.state === 'ATTACK_HEAVY' && f.stateTimer === 16 && !f.hasHitCurrentAttack) {
+          performHitCheck(f, opponent, {
+            range: 105,
+            hitRadius: 118,
+            damage: f.isPlayer ? 14 : 11,
+            mpGain: 25,
+            knockbackX: 17,
+            knockbackY: -9.5,
+            hitStop: 7,
+            shake: 16,
+            stunFrames: 30,
+            isHeavy: true
+          });
+        }
+
+        if (f.stateTimer <= 0 && f.state !== 'KO' && f.state !== 'WIN') {
+          f.state = 'IDLE';
+        }
+      }
+
+      if (f.isPlayer && gameState.phase === 'FIGHT') {
+        if (!['ATTACK_LIGHT', 'ATTACK_HEAVY', 'ATTACK_ULT', 'HURT_LIGHT', 'HURT_HEAVY', 'KO'].includes(f.state)) {
+          if (keys.down && f.isGrounded) {
+            f.state = 'GUARD';
+            f.vx *= 0.6;
+            f.facing = (opponent.x >= f.x) ? 1 : -1;
+          } else if (keys.left) {
+            f.vx = -6.8;
+            f.facing = -1;
+            if (f.isGrounded) f.state = 'WALK';
+          } else if (keys.right) {
+            f.vx = 6.8;
+            f.facing = 1;
+            if (f.isGrounded) f.state = 'WALK';
+          } else {
+            if (f.isGrounded) f.state = 'IDLE';
+            f.vx *= 0.72;
+          }
+        }
+      }
+
+      f.x += f.vx * gameState.slowMoFactor;
+      f.y += f.vy * gameState.slowMoFactor;
+
+      if (!f.isGrounded) {
+        f.vy += GRAVITY * gameState.slowMoFactor;
+      }
+
+      if (f.y >= GROUND_Y) {
+        if (f.vy > 8 && (f.state === 'HURT_LIGHT' || f.state === 'HURT_HEAVY')) {
+          f.vy = -f.vy * 0.35;
+          spawnDust(f.x, GROUND_Y, 8);
+        } else {
+          f.y = GROUND_Y;
+          f.vy = 0;
+        }
+      }
+
+      if (f.isGrounded && f.state !== 'WALK') {
+        f.vx *= 0.78;
+      }
+
+      const minX = 75;
+      const maxX = STAGE_WIDTH - 75;
+      if (f.x < minX) {
+        f.x = minX;
+        if ((f.state === 'HURT_LIGHT' || f.state === 'HURT_HEAVY') && Math.abs(f.vx) > 6) {
+          f.vx = -f.vx * 0.6;
+          gameState.screenShake = Math.max(gameState.screenShake, 10);
+          spawnShockwave(minX - 20, f.y - 60, '#fff', 60);
+        } else {
+          f.vx = 0;
+        }
+      } else if (f.x > maxX) {
+        f.x = maxX;
+        if ((f.state === 'HURT_LIGHT' || f.state === 'HURT_HEAVY') && Math.abs(f.vx) > 6) {
+          f.vx = -f.vx * 0.6;
+          gameState.screenShake = Math.max(gameState.screenShake, 10);
+          spawnShockwave(maxX + 20, f.y - 60, '#fff', 60);
+        } else {
+          f.vx = 0;
+        }
+      }
+
+      const dx = opponent.x - f.x;
+      const minDist = 88;
+      if (Math.abs(dx) < minDist && Math.abs(f.y - opponent.y) < 90 && f.state !== 'ATTACK_ULT' && opponent.state !== 'ATTACK_ULT') {
+        const push = (minDist - Math.abs(dx)) * 0.5;
+        const dir = dx >= 0 ? 1 : -1;
+        f.x -= dir * push;
+        opponent.x += dir * push;
+      }
+
+      f.scaleX += (1 - f.scaleX) * 0.22;
+      f.scaleY += (1 - f.scaleY) * 0.22;
+      f.rotation += (0 - f.rotation) * 0.25;
+    }
+
+    /********************************************************************
+     * 9. VISUAL EFFECTS (PARTICLES, SHOCKWAVES, FLOATING COMIC TEXT)
+     ********************************************************************/
+    function spawnHitSparks(x, y, color, count = 16, includeStars = true) {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 4 + Math.random() * 14;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2,
+          size: 5 + Math.random() * 9,
+          color: i % 3 === 0 ? '#ffffff' : color,
+          alpha: 1,
+          isStar: includeStars && i % 2 === 0
+        });
+      }
+    }
+
+    function spawnDust(x, y, count = 6) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: x + (Math.random() * 40 - 20),
+          y: y - 5,
+          vx: (Math.random() - 0.5) * 6,
+          vy: -Math.random() * 3.5,
+          size: 8 + Math.random() * 10,
+          color: 'rgba(226, 232, 240, 0.7)',
+          alpha: 0.85,
+          isStar: false
+        });
+      }
+    }
+
+    function spawnShockwave(x, y, color, maxRadius = 90) {
+      shockwaves.push({ x, y, radius: 12, maxRadius, color, alpha: 1 });
+    }
+
+    function spawnFloatingText(x, y, text, color = '#fde047', size = 26) {
+      floatingTexts.push({ x, y, text, color, size, vy: -2.6, alpha: 1, scale: 1.45 });
+    }
+
+    /********************************************************************
+     * 10. STAGE, FIGHTERS, FACE CAMS & CUT-IN RENDERING
+     ********************************************************************/
+    function drawStageBackground() {
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+      skyGrad.addColorStop(0, '#1e1b4b');
+      skyGrad.addColorStop(0.45, '#4338ca');
+      skyGrad.addColorStop(0.85, '#f472b6');
+      skyGrad.addColorStop(1, '#fde047');
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, STAGE_WIDTH, GROUND_Y);
+
+      ctx.save();
+      ctx.translate(STAGE_WIDTH / 2, GROUND_Y - 40);
+      ctx.rotate(performance.now() * 0.0002);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+      for (let i = 0; i < 16; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, 900, (i * Math.PI) / 8, (i * Math.PI) / 8 + Math.PI / 16);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.fillStyle = '#312e81';
+      ctx.beginPath();
+      ctx.arc(220, GROUND_Y, 260, Math.PI, 0);
+      ctx.arc(780, GROUND_Y, 290, Math.PI, 0);
+      ctx.fill();
+
+      const floorGrad = ctx.createLinearGradient(0, GROUND_Y, 0, STAGE_HEIGHT);
+      floorGrad.addColorStop(0, '#4ade80');
+      floorGrad.addColorStop(0.2, '#22c55e');
+      floorGrad.addColorStop(1, '#14532d');
+      ctx.fillStyle = floorGrad;
+      ctx.fillRect(0, GROUND_Y, STAGE_WIDTH, STAGE_HEIGHT - GROUND_Y);
+
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(0, GROUND_Y);
+      ctx.lineTo(STAGE_WIDTH, GROUND_Y);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+      ctx.lineWidth = 3;
+      for (let i = -4; i <= 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(STAGE_WIDTH / 2 + i * 110, GROUND_Y);
+        ctx.lineTo(STAGE_WIDTH / 2 + i * 190, STAGE_HEIGHT);
+        ctx.stroke();
+      }
+    }
+
+    function drawFighter(f) {
+      ctx.save();
+
+      const shadowScale = Math.max(0.35, 1 - (GROUND_Y - f.y) / 320);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
+      ctx.beginPath();
+      ctx.ellipse(f.x, GROUND_Y + 8, 56 * shadowScale, 15 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.translate(f.x, f.y - 68);
+
+      let bounceY = 0;
+      let walkTilt = 0;
+      if (f.state === 'IDLE' && f.isGrounded) {
+        bounceY = Math.sin(f.animTick * 2) * 4;
+      } else if (f.state === 'WALK' && f.isGrounded) {
+        bounceY = -Math.abs(Math.sin(f.animTick * 4.5)) * 12;
+        walkTilt = Math.sin(f.animTick * 4.5) * 0.1;
+      } else if (f.state === 'WIN') {
+        bounceY = -Math.abs(Math.sin(f.animTick * 5)) * 24;
+      }
+
+      ctx.translate(0, bounceY);
+      ctx.rotate(f.rotation + walkTilt);
+      ctx.scale(f.facing * f.scaleX, f.scaleY);
+
+      // Aura glow when Ultimate is 100% Ready
+      if (f.mp >= 100 && f.state !== 'KO') {
+        ctx.save();
+        ctx.shadowColor = f.isPlayer ? '#facc15' : '#38bdf8';
+        ctx.shadowBlur = 24 + Math.sin(f.animTick * 5) * 10;
+        ctx.strokeStyle = f.isPlayer ? 'rgba(250, 204, 21, 0.85)' : 'rgba(56, 189, 248, 0.85)';
+        ctx.lineWidth = 4.5;
+        ctx.beginPath();
+        ctx.arc(0, 4, 68, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const expr = f.getCurrentExpression();
+      if (f.isPlayer) {
+        renderUsagiArt(ctx, expr, f.animTick, false);
+      } else {
+        renderMomongaArt(ctx, expr, f.animTick, false);
+      }
+
+      // Guard Energy Shield
+      if (f.state === 'GUARD') {
+        ctx.save();
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.26)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(24, 0, 68, -Math.PI * 0.45, Math.PI * 0.45);
+        ctx.stroke();
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Attack Swing Visuals
+      if (f.state === 'ATTACK_LIGHT') {
+        ctx.save();
+        ctx.strokeStyle = f.isPlayer ? '#fde047' : '#38bdf8';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(35, 0, 56, -0.6, 0.6);
+        ctx.stroke();
+
+        ctx.fillStyle = f.isPlayer ? '#f59e0b' : '#ec4899';
+        ctx.strokeStyle = '#111827';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(80, 2, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      } else if (f.state === 'ATTACK_HEAVY') {
+        ctx.save();
+        if (f.isPlayer) {
+          // Usagi Pink Sasumata (토벌봉) Smash!
+          ctx.rotate(0.42);
+          ctx.strokeStyle = '#f472b6';
+          ctx.lineWidth = 9;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(10, 10);
+          ctx.lineTo(105, -28);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(112, -32, 20, -1.8, 1.0);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(250, 204, 21, 0.85)';
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.arc(38, 0, 90, -0.9, 0.7);
+          ctx.stroke();
+        } else {
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.arc(38, 0, 82, -0.8, 0.8);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    function drawAfterimages() {
+      for (let i = afterimages.length - 1; i >= 0; i--) {
+        const a = afterimages[i];
+        a.alpha -= 0.06;
+        if (a.alpha <= 0) {
+          afterimages.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = a.alpha * 0.45;
+        ctx.translate(a.x, a.y - 68);
+        ctx.scale(a.facing, 1);
+        if (a.isPlayer) renderUsagiArt(ctx, a.expr, 0, false);
+        else renderMomongaArt(ctx, a.expr, 0, false);
+        ctx.restore();
+      }
+    }
+
+    function drawEffects() {
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i];
+        sw.radius += (sw.maxRadius - sw.radius) * 0.25;
+        sw.alpha -= 0.07;
+        if (sw.alpha <= 0) {
+          shockwaves.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = sw.alpha;
+        ctx.strokeStyle = sw.color;
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.35;
+        p.alpha -= 0.04;
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        if (p.isStar) {
+          drawStarShape(ctx, p.x, p.y, 5, p.size, p.size * 0.45, p.color);
+        } else {
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy;
+        ft.scale += (1 - ft.scale) * 0.25;
+        ft.alpha -= 0.024;
+        if (ft.alpha <= 0) {
+          floatingTexts.splice(i, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = ft.alpha;
+        ctx.translate(ft.x, ft.y);
+        ctx.scale(ft.scale, ft.scale);
+        ctx.font = `900 ${ft.size}px 'Black Han Sans', 'M PLUS Rounded 1c', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#111827';
+        ctx.strokeText(ft.text, 0, 0);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, 0, 0);
+        ctx.restore();
+      }
+
+      if (gameState.comboCount >= 2 && gameState.comboTimer > 0) {
+        ctx.save();
+        const pulse = 1 + Math.sin(performance.now() * 0.025) * 0.08;
+        ctx.translate(125, 225);
+        ctx.scale(pulse, pulse);
+        ctx.font = `900 42px 'Black Han Sans', 'Rubik Mono One', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = '#111827';
+        ctx.strokeText(`${gameState.comboCount} HIT!`, 0, 0);
+        ctx.fillStyle = '#facc15';
+        ctx.fillText(`${gameState.comboCount} HIT!`, 0, 0);
+
+        ctx.font = `900 17px 'Jua', sans-serif`;
+        ctx.strokeText(`URAYAHA COMBO!!`, 0, 24);
+        ctx.fillStyle = '#fb7185';
+        ctx.fillText(`URAYAHA COMBO!!`, 0, 24);
+        ctx.restore();
+      }
+    }
+
+    // Update Live Close-up Face Cams in Top HUD
+    function renderLiveFaceCams() {
+      const p1Expr = player.getCurrentExpression();
+      const p2Expr = enemy.getCurrentExpression();
+
+      // P1 Face Cam
+      p1FaceCtx.clearRect(0, 0, 140, 140);
+      p1FaceCtx.save();
+      p1FaceCtx.translate(70, 82);
+      p1FaceCtx.scale(1.12, 1.12);
+      renderUsagiArt(p1FaceCtx, p1Expr, player.animTick, true);
+      p1FaceCtx.restore();
+
+      // P2 Face Cam
+      p2FaceCtx.clearRect(0, 0, 140, 140);
+      p2FaceCtx.save();
+      p2FaceCtx.translate(70, 78);
+      p2FaceCtx.scale(1.12, 1.12);
+      renderMomongaArt(p2FaceCtx, p2Expr, enemy.animTick, true);
+      p2FaceCtx.restore();
+
+      // Update Expression Badges underneath Face Cams
+      const uInfo = EXPRESSION_CATALOG.usagi.find(e => e.id === p1Expr) || EXPRESSION_CATALOG.usagi[0];
+      const mInfo = EXPRESSION_CATALOG.momonga.find(e => e.id === p2Expr) || EXPRESSION_CATALOG.momonga[0];
+
+      document.getElementById('p1-expr-badge').textContent = `${uInfo.icon} ${uInfo[currentLang].name}`;
+      document.getElementById('p2-expr-badge').textContent = `${mInfo.icon} ${mInfo[currentLang].name}`;
+
+      // Pop animation when expression changes
+      if (player.lastExpr !== p1Expr) {
+        player.lastExpr = p1Expr;
+        const box = document.getElementById('p1-face-box');
+        box.classList.add('face-cam-pop');
+        setTimeout(() => box.classList.remove('face-cam-pop'), 160);
+      }
+      if (enemy.lastExpr !== p2Expr) {
+        enemy.lastExpr = p2Expr;
+        const box = document.getElementById('p2-face-box');
+        box.classList.add('face-cam-pop');
+        setTimeout(() => box.classList.remove('face-cam-pop'), 160);
+      }
+    }
+
+    function drawUltimateCutIn() {
+      const owner = gameState.ultCutInOwner;
+      if (!owner) return;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.82)';
+      ctx.fillRect(0, 0, STAGE_WIDTH, STAGE_HEIGHT);
+
+      ctx.save();
+      ctx.translate(STAGE_WIDTH / 2, STAGE_HEIGHT / 2);
+      ctx.rotate(-0.1);
+
+      const bannerGrad = ctx.createLinearGradient(-600, -110, 600, 110);
+      if (owner.isPlayer) {
+        bannerGrad.addColorStop(0, '#dc2626');
+        bannerGrad.addColorStop(0.5, '#f59e0b');
+        bannerGrad.addColorStop(1, '#fef08a');
+      } else {
+        bannerGrad.addColorStop(0, '#1d4ed8');
+        bannerGrad.addColorStop(0.5, '#a855f7');
+        bannerGrad.addColorStop(1, '#38bdf8');
+      }
+
+      ctx.fillStyle = bannerGrad;
+      ctx.fillRect(-650, -100, 1300, 200);
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(-650, -100, 1300, 200);
+
+      // Dramatic Close-up of Both Characters' Faces in Cut-in!
+      ctx.save();
+      ctx.translate(-300, 15);
+      ctx.scale(1.65, 1.65);
+      if (owner.isPlayer) {
+        renderUsagiArt(ctx, 'SUPER', player.animTick, true);
+      } else {
+        renderMomongaArt(ctx, 'ATTACK', enemy.animTick, true);
+      }
+      ctx.restore();
+
+      // Victim shocked/crying preview on right side of cut-in
+      ctx.save();
+      ctx.translate(340, 15);
+      ctx.scale(1.45, 1.45);
+      if (owner.isPlayer) {
+        renderMomongaArt(ctx, 'HURT_HEAVY', enemy.animTick, true);
+      } else {
+        renderUsagiArt(ctx, 'HURT', player.animTick, true);
+      }
+      ctx.restore();
+
+      const dict = I18N[currentLang];
+      const title = owner.isPlayer ? dict.ultCutInTitle : dict.p2UltCutInTitle;
+      const sub = owner.isPlayer ? dict.ultCutInSub : "내놔아아아ㅡ!!";
+
+      ctx.font = `900 38px 'Black Han Sans', 'M PLUS Rounded 1c', sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.lineWidth = 9;
+      ctx.strokeStyle = '#111827';
+      ctx.strokeText(title, 10, -12);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(title, 10, -12);
+
+      ctx.font = `900 25px 'Jua', 'M PLUS Rounded 1c', sans-serif`;
+      ctx.strokeText(sub, 10, 38);
+      ctx.fillStyle = '#fef08a';
+      ctx.fillText(sub, 10, 38);
+
+      ctx.restore();
+      ctx.restore();
+    }
+
+    /********************************************************************
+     * 11. EXPRESSION ENCYCLOPEDIA / PREVIEW MODAL ([🎭 표정 도감 / 미리보기])
+     ********************************************************************/
+    let selectedSpotlight = { char: 'usagi', exprId: 'IDLE' };
+    let modalOpen = false;
+
+    function buildExpressionGalleryCards() {
+      const usagiGrid = document.getElementById('usagi-expr-grid');
+      const momongaGrid = document.getElementById('momonga-expr-grid');
+      usagiGrid.innerHTML = '';
+      momongaGrid.innerHTML = '';
+
+      EXPRESSION_CATALOG.usagi.forEach((item, idx) => {
+        const card = document.createElement('button');
+        card.className = "flex items-center gap-2.5 p-2 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 hover:border-amber-400 text-left transition cursor-pointer";
+        card.onclick = () => selectSpotlightExpression('usagi', item.id);
+        card.innerHTML = `
+          <div class="w-14 h-14 rounded-xl bg-amber-100 border border-amber-400 shrink-0 overflow-hidden">
+            <canvas id="card-canvas-usagi-${item.id}" width="90" height="90"></canvas>
+          </div>
+          <div class="flex flex-col overflow-hidden">
+            <span class="text-xs font-black text-amber-300 truncate">${idx + 1}. ${item.icon} ${item[currentLang].name}</span>
+            <span class="text-[10px] text-slate-300 line-clamp-2 leading-tight mt-0.5">${item[currentLang].desc}</span>
+          </div>
+        `;
+        usagiGrid.appendChild(card);
+      });
+
+      EXPRESSION_CATALOG.momonga.forEach((item, idx) => {
+        const card = document.createElement('button');
+        card.className = "flex items-center gap-2.5 p-2 rounded-2xl bg-slate-800 hover:bg-slate-700 border-2 border-slate-600 hover:border-sky-400 text-left transition cursor-pointer";
+        card.onclick = () => selectSpotlightExpression('momonga', item.id);
+        card.innerHTML = `
+          <div class="w-14 h-14 rounded-xl bg-sky-100 border border-sky-400 shrink-0 overflow-hidden">
+            <canvas id="card-canvas-momonga-${item.id}" width="90" height="90"></canvas>
+          </div>
+          <div class="flex flex-col overflow-hidden">
+            <span class="text-xs font-black text-sky-300 truncate">${idx + 1}. ${item.icon} ${item[currentLang].name}</span>
+            <span class="text-[10px] text-slate-300 line-clamp-2 leading-tight mt-0.5">${item[currentLang].desc}</span>
+          </div>
+        `;
+        momongaGrid.appendChild(card);
+      });
+
+      // Render static thumbnails once
+      renderGalleryThumbnails();
+    }
+
+    function renderGalleryThumbnails() {
+      EXPRESSION_CATALOG.usagi.forEach((item) => {
+        const c = document.getElementById(`card-canvas-usagi-${item.id}`);
+        if (!c) return;
+        const cx = c.getContext('2d');
+        cx.clearRect(0, 0, 90, 90);
+        cx.save();
+        cx.translate(45, 52);
+        cx.scale(0.68, 0.68);
+        renderUsagiArt(cx, item.id, 10, true);
+        cx.restore();
+      });
+
+      EXPRESSION_CATALOG.momonga.forEach((item) => {
+        const c = document.getElementById(`card-canvas-momonga-${item.id}`);
+        if (!c) return;
+        const cx = c.getContext('2d');
+        cx.clearRect(0, 0, 90, 90);
+        cx.save();
+        cx.translate(45, 50);
+        cx.scale(0.68, 0.68);
+        renderMomongaArt(cx, item.id, 10, true);
+        cx.restore();
+      });
+    }
+
+    function selectSpotlightExpression(char, exprId) {
+      selectedSpotlight = { char, exprId };
+      const list = EXPRESSION_CATALOG[char];
+      const item = list.find(e => e.id === exprId) || list[0];
+      const idx = list.indexOf(item) + 1;
+
+      const tag = document.getElementById('spotlight-char-tag');
+      if (char === 'usagi') {
+        tag.textContent = I18N[currentLang].p1Name;
+        tag.className = "inline-block w-fit px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-xs";
+        sfx.playCharacterVoice(true, exprId === 'HEAVY' || exprId === 'SUPER' ? 'HEAVY' : 'LIGHT');
+      } else {
+        tag.textContent = I18N[currentLang].p2Name;
+        tag.className = "inline-block w-fit px-2.5 py-0.5 rounded-full bg-sky-400 text-slate-950 font-black text-xs";
+        sfx.playCharacterVoice(false, exprId === 'TAUNT' || exprId === 'WIN' ? 'TAUNT' : 'CRY');
+      }
+
+      document.getElementById('spotlight-expr-name').textContent = `${idx}. ${item.icon} ${item[currentLang].name}`;
+      document.getElementById('spotlight-expr-desc').textContent = item[currentLang].desc;
+    }
+
+    function openExpressionModal() {
+      modalOpen = true;
+      buildExpressionGalleryCards();
+      selectSpotlightExpression(selectedSpotlight.char, selectedSpotlight.exprId);
+      const modal = document.getElementById('expression-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeExpressionModal() {
+      modalOpen = false;
+      const modal = document.getElementById('expression-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function triggerSpotlightTestInGame() {
+      const { char, exprId } = selectedSpotlight;
+      const target = char === 'usagi' ? player : enemy;
+      target.overrideExpr = exprId;
+      target.overrideTimer = 210; // 3.5 seconds at 60fps
+      closeExpressionModal();
+
+      const item = EXPRESSION_CATALOG[char].find(e => e.id === exprId);
+      if (item) {
+        spawnFloatingText(target.x, target.y - 145, `${item.icon} ${item[currentLang].name}`, char === 'usagi' ? '#fde047' : '#38bdf8', 26);
+      }
+    }
+
+    /********************************************************************
+     * 12. UI, HUD & LANGUAGE SWITCHING
+     ********************************************************************/
+    function updateHUD() {
+      const dict = I18N[currentLang];
+
+      document.getElementById('p1-hp-bar').style.width = `${Math.max(0, player.hp)}%`;
+      document.getElementById('p1-hp-trail').style.width = `${Math.max(0, player.trailHp)}%`;
+      document.getElementById('hud-p1-hp-text').textContent = `${Math.ceil(player.hp)}%`;
+
+      document.getElementById('p2-hp-bar').style.width = `${Math.max(0, enemy.hp)}%`;
+      document.getElementById('p2-hp-trail').style.width = `${Math.max(0, enemy.trailHp)}%`;
+      document.getElementById('hud-p2-hp-text').textContent = `${Math.ceil(enemy.hp)}%`;
+
+      document.getElementById('p1-mp-bar').style.width = `${Math.floor(player.mp)}%`;
+      document.getElementById('hud-p1-mp-status').textContent =
+        player.mp >= 100 ? dict.mpReady : `${Math.floor(player.mp)}%`;
+
+      document.getElementById('p2-mp-bar').style.width = `${Math.floor(enemy.mp)}%`;
+      document.getElementById('hud-p2-mp-status').textContent = `${Math.floor(enemy.mp)}%`;
+
+      const ultBtn = document.getElementById('pad-ult');
+      if (player.mp >= 100) {
+        ultBtn.classList.add('ult-ready');
+        ultBtn.classList.remove('opacity-75');
+      } else {
+        ultBtn.classList.remove('ult-ready');
+        ultBtn.classList.add('opacity-75');
+      }
+
+      document.getElementById('hud-score-badge').textContent = `🏆 ${p1Wins} - ${p2Wins}`;
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      const dict = I18N[lang];
+
+      ['ko', 'en', 'ja'].forEach((l) => {
+        const btn = document.getElementById(`lang-${l}`);
+        if (l === lang) {
+          btn.className = "px-2 py-1 rounded-lg text-xs font-bold transition bg-amber-400 text-slate-950";
+        } else {
+          btn.className = "px-2 py-1 rounded-lg text-xs font-bold transition text-slate-300 hover:text-white";
+        }
+      });
+
+      document.getElementById('ui-game-title').textContent = dict.gameTitle;
+      document.getElementById('hud-p1-name').textContent = dict.p1Name;
+      document.getElementById('hud-p2-name').textContent = dict.p2Name;
+      document.getElementById('hud-p1-mp-label').textContent = dict.mpLabelP1;
+      document.getElementById('hud-p2-mp-label').textContent = dict.mpLabelP2;
+      document.getElementById('btn-expr-gallery').textContent = dict.exprBtn;
+
+      document.getElementById('opt-normal').textContent = dict.optNormal;
+      document.getElementById('opt-easy').textContent = dict.optEasy;
+      document.getElementById('opt-hard').textContent = dict.optHard;
+      document.getElementById('opt-sandbag').textContent = dict.optSandbag;
+
+      document.getElementById('btn-charge-ult').textContent = dict.chargeUlt;
+      document.getElementById('btn-restart-top').textContent = dict.restart;
+      document.getElementById('btn-sound').textContent = sfx.muted ? dict.sfxOff : dict.sfxOn;
+
+      document.getElementById('lbl-jump').textContent = dict.jump;
+      document.getElementById('lbl-guard').textContent = dict.guard;
+      document.getElementById('lbl-light').textContent = dict.lightAtk;
+      document.getElementById('lbl-heavy').textContent = dict.heavyAtk;
+      document.getElementById('lbl-ult').textContent = dict.ultAtk;
+      document.getElementById('lbl-taunt').textContent = dict.tauntBtn;
+
+      document.getElementById('ui-controls-tip').innerHTML = dict.controlsTip;
+      document.getElementById('stat-max-combo-label').textContent = dict.statMaxCombo;
+      document.getElementById('stat-rem-hp-label').textContent = dict.statRemHp;
+      document.getElementById('btn-rematch').textContent = dict.rematchBtn;
+
+      document.getElementById('modal-expr-title').textContent = dict.modalTitle;
+      document.getElementById('modal-expr-subtitle').textContent = dict.modalSub;
+      document.getElementById('btn-apply-ingame').textContent = dict.applyInGame;
+
+      if (modalOpen) {
+        buildExpressionGalleryCards();
+        selectSpotlightExpression(selectedSpotlight.char, selectedSpotlight.exprId);
+      }
+
+      updateHUD();
+    }
+
+    function changeAIMode(mode) {
+      aiDifficulty = mode;
+      startNewMatch();
+    }
+
+    function fillPlayerUlt() {
+      player.mp = 100;
+      updateHUD();
+      spawnFloatingText(player.x, player.y - 140, I18N[currentLang].mpReady, '#facc15', 26);
+    }
+
+    function toggleMute() {
+      sfx.muted = !sfx.muted;
+      const dict = I18N[currentLang];
+      const btn = document.getElementById('btn-sound');
+      btn.textContent = sfx.muted ? dict.sfxOff : dict.sfxOn;
+      btn.className = sfx.muted
+        ? "px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-rose-400 transition cursor-pointer"
+        : "px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-bold text-emerald-300 transition cursor-pointer";
+    }
+
+    /********************************************************************
+     * 13. MATCH FLOW (READY... FIGHT! -> ROUND -> WIN/LOSE)
+     ********************************************************************/
+    let introTimeouts = [];
+
+    function showAnnouncement(mainText, subText, color = '#fcd34d') {
+      const mainEl = document.getElementById('announcement-main');
+      const subEl = document.getElementById('announcement-sub');
+
+      mainEl.textContent = mainText;
+      mainEl.style.color = color;
+      mainEl.classList.remove('hidden', 'animate-slam');
+      void mainEl.offsetWidth;
+      mainEl.classList.add('animate-slam');
+
+      if (subText) {
+        subEl.textContent = subText;
+        subEl.classList.remove('hidden');
+      } else {
+        subEl.classList.add('hidden');
+      }
+    }
+
+    function hideAnnouncement() {
+      document.getElementById('announcement-main').classList.add('hidden');
+      document.getElementById('announcement-sub').classList.add('hidden');
+    }
+
+    function showResultModal(outcome) {
+      gameState.phase = 'RESULT';
+      const dict = I18N[currentLang];
+      const modal = document.getElementById('result-modal');
+      const title = document.getElementById('result-title');
+      const desc = document.getElementById('result-desc');
+
+      let p1ResultExpr = 'WIN';
+      let p2ResultExpr = 'LOSE';
+
+      if (outcome === 'WIN') {
+        title.textContent = dict.winTitle;
+        title.style.color = '#fde047';
+        desc.textContent = dict.winDesc;
+        p1ResultExpr = 'WIN';
+        p2ResultExpr = 'LOSE';
+      } else if (outcome === 'LOSE') {
+        title.textContent = dict.loseTitle;
+        title.style.color = '#f87171';
+        desc.textContent = dict.loseDesc;
+        p1ResultExpr = 'LOSE';
+        p2ResultExpr = 'WIN';
+      } else {
+        title.textContent = dict.drawTitle;
+        title.style.color = '#38bdf8';
+        desc.textContent = dict.drawDesc;
+        p1ResultExpr = 'IDLE';
+        p2ResultExpr = 'IDLE';
+      }
+
+      // Render WIN/LOSE portraits inside Result Modal
+      const rp1 = document.getElementById('result-p1-canvas').getContext('2d');
+      rp1.clearRect(0, 0, 140, 140);
+      rp1.save();
+      rp1.translate(70, 80);
+      rp1.scale(1.1, 1.1);
+      renderUsagiArt(rp1, p1ResultExpr, 20, true);
+      rp1.restore();
+
+      const rp2 = document.getElementById('result-p2-canvas').getContext('2d');
+      rp2.clearRect(0, 0, 140, 140);
+      rp2.save();
+      rp2.translate(70, 78);
+      rp2.scale(1.1, 1.1);
+      renderMomongaArt(rp2, p2ResultExpr, 20, true);
+      rp2.restore();
+
+      document.getElementById('result-p1-label').textContent = dict.p1Name;
+      document.getElementById('result-p2-label').textContent = dict.p2Name;
+      document.getElementById('stat-max-combo').textContent = `${gameState.maxCombo} HIT`;
+      document.getElementById('stat-rem-hp').textContent = `${Math.ceil(player.hp)}%`;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function startNewMatch() {
+      introTimeouts.forEach(t => clearTimeout(t));
+      introTimeouts = [];
+
+      document.getElementById('result-modal').classList.add('hidden');
+      document.getElementById('result-modal').classList.remove('flex');
+
+      player.reset();
+      enemy.reset();
+      player.mp = 40;
+
+      particles.length = 0;
+      shockwaves.length = 0;
+      floatingTexts.length = 0;
+      afterimages.length = 0;
+
+      gameState.phase = 'INTRO';
+      gameState.timer = 60;
+      gameState.lastTimerTick = performance.now();
+      gameState.hitStopFrames = 0;
+      gameState.screenShake = 0;
+      gameState.cameraZoom = 1;
+      gameState.slowMoFactor = 1;
+      gameState.comboCount = 0;
+      gameState.maxCombo = 0;
+
+      document.getElementById('hud-timer').textContent = '60';
+      updateHUD();
+
+      const dict = I18N[currentLang];
+      showAnnouncement(dict.readyMain, dict.readySub, '#fde047');
+      sfx.playReadyFight(false);
+
+      introTimeouts.push(setTimeout(() => {
+        const d = I18N[currentLang];
+        showAnnouncement(d.fightMain, d.fightSub, '#fb7185');
+        sfx.playReadyFight(true);
+        gameState.screenShake = 12;
+        gameState.phase = 'FIGHT';
+        gameState.lastTimerTick = performance.now();
+      }, 1250));
+
+      introTimeouts.push(setTimeout(() => {
+        if (gameState.phase === 'FIGHT') {
+          hideAnnouncement();
+        }
+      }, 2150));
+    }
+
+    /********************************************************************
+     * 14. MAIN ANIMATION LOOP
+     ********************************************************************/
+    function resizeCanvas() {
+      canvas.width = STAGE_WIDTH;
+      canvas.height = STAGE_HEIGHT;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function gameLoop(now) {
+      requestAnimationFrame(gameLoop);
+
+      // Animate Spotlight Preview inside [🎭 표정 도감] Modal if open
+      if (modalOpen) {
+        const spCanvas = document.getElementById('preview-spotlight-canvas');
+        if (spCanvas) {
+          const spCtx = spCanvas.getContext('2d');
+          spCtx.clearRect(0, 0, 180, 180);
+          spCtx.save();
+          spCtx.translate(90, 102);
+          spCtx.scale(1.25, 1.25);
+          const t = now * 0.015;
+          if (selectedSpotlight.char === 'usagi') {
+            renderUsagiArt(spCtx, selectedSpotlight.exprId, t, false);
+          } else {
+            renderMomongaArt(spCtx, selectedSpotlight.exprId, t, false);
+          }
+          spCtx.restore();
+        }
+      }
+
+      if (gameState.phase === 'FIGHT' && aiDifficulty !== 'sandbag') {
+        if (now - gameState.lastTimerTick >= 1000) {
+          gameState.lastTimerTick = now;
+          if (gameState.timer > 0) {
+            gameState.timer--;
+            document.getElementById('hud-timer').textContent = String(gameState.timer);
+            if (gameState.timer === 0) {
+              const dict = I18N[currentLang];
+              showAnnouncement(dict.timeOverMain, "", '#38bdf8');
+              gameState.phase = 'KO';
+              setTimeout(() => {
+                hideAnnouncement();
+                if (player.hp > enemy.hp) {
+                  p1Wins++;
+                  updateHUD();
+                  showResultModal('WIN');
+                } else if (enemy.hp > player.hp) {
+                  p2Wins++;
+                  updateHUD();
+                  showResultModal('LOSE');
+                } else {
+                  showResultModal('DRAW');
+                }
+              }, 1500);
+            }
+          }
+        }
+      } else if (aiDifficulty === 'sandbag') {
+        document.getElementById('hud-timer').textContent = '∞';
+      }
+
+      if (gameState.comboTimer > 0) {
+        gameState.comboTimer--;
+        if (gameState.comboTimer === 0) gameState.comboCount = 0;
+      }
+
+      if (gameState.phase === 'ULT_CUTIN') {
+        gameState.ultCutInTimer--;
+        if (gameState.ultCutInTimer <= 0) {
+          gameState.phase = 'FIGHT';
+        }
+      } else if (gameState.hitStopFrames > 0) {
+        gameState.hitStopFrames--;
+      } else {
+        updateMomongaAI();
+        updateFighterPhysics(player, enemy);
+        updateFighterPhysics(enemy, player);
+        updateHUD();
+      }
+
+      renderLiveFaceCams();
+
+      let shakeX = 0;
+      let shakeY = 0;
+      if (gameState.screenShake > 0) {
+        shakeX = (Math.random() - 0.5) * gameState.screenShake * 1.8;
+        shakeY = (Math.random() - 0.5) * gameState.screenShake * 1.8;
+        gameState.screenShake *= 0.85;
+        if (gameState.screenShake < 0.5) gameState.screenShake = 0;
+      }
+      gameState.cameraZoom += (1 - gameState.cameraZoom) * 0.15;
+
+      ctx.save();
+      ctx.clearRect(0, 0, STAGE_WIDTH, STAGE_HEIGHT);
+
+      ctx.translate(STAGE_WIDTH / 2 + shakeX, STAGE_HEIGHT / 2 + shakeY);
+      ctx.scale(gameState.cameraZoom, gameState.cameraZoom);
+      ctx.translate(-STAGE_WIDTH / 2, -STAGE_HEIGHT / 2);
+
+      drawStageBackground();
+      drawAfterimages();
+
+      if (player.state === 'ATTACK_LIGHT' || player.state === 'ATTACK_HEAVY' || player.state === 'ATTACK_ULT') {
+        drawFighter(enemy);
+        drawFighter(player);
+      } else {
+        drawFighter(player);
+        drawFighter(enemy);
+      }
+
+      drawEffects();
+
+      if (gameState.phase === 'ULT_CUTIN') {
+        drawUltimateCutIn();
+      }
+
+      ctx.restore();
+    }
+
+    window.onload = function () {
+      resizeCanvas();
+      setLanguage('ko');
+      startNewMatch();
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
